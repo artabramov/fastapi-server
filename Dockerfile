@@ -17,6 +17,7 @@ RUN apt-get install -y redis
 RUN apt-get install -y cron
 RUN apt-get upgrade -y cron
 RUN apt-get install -y ntp
+RUN apt-get install -y sudo
 RUN apt install -y git
 
 RUN apt-get install -y apache2 apache2-dev
