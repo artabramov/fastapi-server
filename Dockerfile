@@ -10,6 +10,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt install -y python3.13
 RUN apt-get install -y python3-dev
 RUN apt-get install -y python3-pip
+RUN alias python3="/usr/bin/python3.13"
 
 RUN apt-get install -y cron
 RUN apt-get upgrade -y cron
