@@ -13,6 +13,11 @@ RUN apt-get install -y python3-pip
 RUN alias python3="/usr/bin/python3.13"
 
 RUN apt install -y postgresql postgresql-contrib
+RUN apt-get install -y sudo
+RUN service postgresql start
+RUN sudo -u postgres psql -c "CREATE USER memo WITH PASSWORD 'he7w2rLY4Y8pFk2u';"
+RUN sudo -u postgres psql -c "CREATE DATABASE memo;"
+
 RUN apt-get install -y redis
 RUN apt-get install -y cron
 RUN apt-get upgrade -y cron
