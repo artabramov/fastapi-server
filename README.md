@@ -1,11 +1,28 @@
 # memo
 
-### Build the image from a Dockerfile
+### How to install
 ```
-docker build --no-cache -t memo-server .
+./make.sh
 ```
 
-### Create and run a new container from the image
+### How to allow remote connection to Postgres
+Install VIM
 ```
-docker run -dit -p 80:8080 -p 5432:5432 -v postgres-data:/var/lib/postgresql/14/main --name memo-server memo-server
+apt-get install -y vim
+```
+Edit postgres.conf
+```
+vim /etc/postgresql/14/main/postgresql.conf
+```
+And change the line:
+```
+listen_addresses = '*'
+```
+Edit pg_hba.conf
+```
+vim /etc/postgresql/14/main/pg_hba.conf
+```
+And add the line
+```
+host all all 0.0.0.0/0 md5
 ```
