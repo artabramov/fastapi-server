@@ -7,3 +7,11 @@ engine = create_engine("postgresql+psycopg2://memo:he7w2rLY4Y8pFk2u@localhost:54
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

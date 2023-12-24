@@ -22,7 +22,11 @@ Open pg_hba.conf
 ```
 vim /etc/postgresql/14/main/pg_hba.conf
 ```
-And add the line:
+Add the line at the end:
 ```
 host all all 0.0.0.0/0 md5
+```
+And restart Postgres service:
+```
+service postgresql restart
 ```

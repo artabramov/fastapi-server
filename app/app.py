@@ -1,9 +1,19 @@
-from fastapi import FastAPI
-from app.routers import categories
+from fastapi import FastAPI, Depends
+from app.schemas.user import UserInsert, UserSelect
+from app.db import SessionLocal
+from app.routers import users
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.db import Base, engine
+    from app.models.user import User
+    Base.metadata.create_all(bind=engine)
+    yield
 
-app.include_router(categories.router)
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(users.router)
 
 
 @app.get("/")
