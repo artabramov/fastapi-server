@@ -32,6 +32,8 @@ class User(Base):
     jti_encrypted = Column(String(512), nullable=False, unique=True)
     userpic = Column(String(512), nullable=True, unique=True)
 
+    meta = relationship("UserMeta", back_populates="user")
+
     def __init__(self, user_login: str, user_pass: str, first_name: str, last_name: str) -> None:
         """Init user model."""
         self.suspended_date = 0
@@ -46,6 +48,3 @@ class User(Base):
         self.mfa_key_encrypted = 'mfa-key-encrypted' + str(time())
         self.mfa_attempts = 0
         self.jti_encrypted = 'jti-encrypted' + str(time())
-
-
-

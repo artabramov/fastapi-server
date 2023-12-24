@@ -1,6 +1,6 @@
 from app.managers.entity_manager import EntityManager
 from sqlalchemy.orm import Session
-from app.schemas.user_schemas import UserInsert, UserSelect
+from app.schemas.user_schema import UserInsert, UserSelect
 from app.repositories.user_repository import UserRepository
 
 
@@ -12,7 +12,6 @@ class RepositoryProvider:
         self.entity_manager = EntityManager(db)
 
     def get(self, schema) -> object:
-        """Returns repository object."""
-        if type(schema) in [UserInsert, UserSelect]:
+        """Return repository for schema."""
+        if schema in [UserInsert, UserSelect]:
             return UserRepository(self.entity_manager)
-
