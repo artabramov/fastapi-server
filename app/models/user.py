@@ -29,7 +29,7 @@ class User(Base):
     pass_accepted = Column(Boolean, nullable=False, default=False)
     mfa_key_encrypted = Column(String(512), nullable=False, unique=True)
     mfa_attempts = Column(SmallInteger(), nullable=False, default=0)
-    jti_encrypted = Column(String(512), nullable=False)
+    jti_encrypted = Column(String(512), nullable=False, unique=True)
     userpic = Column(String(512), nullable=True, unique=True)
 
     def __init__(self, user_login: str, user_pass: str, first_name: str, last_name: str) -> None:
@@ -43,9 +43,9 @@ class User(Base):
         self.pass_hash = user_pass + 'salt'
         self.pass_attempts = 0
         self.pass_accepted = False
-        self.mfa_key_encrypted = 'mfa-key-encrypted'
+        self.mfa_key_encrypted = 'mfa-key-encrypted' + str(time())
         self.mfa_attempts = 0
-        self.jti_encrypted = 'jti-encrypted'
+        self.jti_encrypted = 'jti-encrypted' + str(time())
 
 
 
