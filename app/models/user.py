@@ -15,6 +15,7 @@ class UserRole(enum.Enum):
 
 class User(Base):
     __tablename__ = 'users'
+    _meta_keys = ["user_summary", "user_contacts"]
 
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))

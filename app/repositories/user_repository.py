@@ -1,32 +1,37 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.models.user_meta import UserMeta
-from app.schemas.user_schema import UserInsert, UserSelect
-# from app.models.user_meta import USER_META_KEYS
-from app.schemas.meta_schema import MetaSchema
+from app.schemas.user_schema import UserInsert #, UserSelect
+from app.managers.entity_manager import EntityManager
+from fastapi import HTTPException
 
 
 class UserRepository():
 
-    def __init__(self, entity_manager: object) -> None:
+    def __init__(self, entity_manager: EntityManager) -> None:
         self.entity_manager = entity_manager
 
     def insert(self, schema: UserInsert):
-        user = User(user_login=schema.user_login, user_pass=schema.user_pass, first_name=schema.first_name,
-                    last_name=schema.last_name)
-        self.entity_manager.insert(user, commit=True)
+        if self.entity_manager.exists(User, user_login=schema.user_login):
+            raise HTTPException(status_code=418, detail="User login already occupied.")
 
-        for _, meta_schema in schema.meta.items():
-            MetaSchema.model_validate(meta_schema)
-            user_meta = UserMeta(user.id, meta_schema.meta_key, meta_schema.meta_value)
-            self.entity_manager.insert(user_meta, commit=True)
+        try:
+            user = User(user_login=schema.user_login, user_pass=schema.user_pass, first_name=schema.first_name,
+                        last_name=schema.last_name)
+            self.entity_manager.insert(user)
 
-        # for meta_key in USER_META_KEYS:
-        #     meta_value = schema.__getattribute__(meta_key)
-        #     if meta_value:
-        #         MetaSchema.model_validate(MetaSchema(meta_key=meta_key, meta_value=meta_value))
-        #         user_meta = UserMeta(user.id, meta_key, schema.__getattribute__(meta_key))
-        #         self.entity_manager.insert(user_meta, commit=True)
+            for meta_key in User._meta_keys:
+                meta_value = getattr(schema, meta_key)
+                if meta_value:
+                    user_meta = UserMeta(user.id, meta_key, meta_value)
+                    self.entity_manager.insert(user_meta)
+
+            self.entity_manager.commit()
+
+        except Exception as e:
+            self.entity_manager.rollback()
+            raise e
+
         return user
 
     def select(self, id: int):
