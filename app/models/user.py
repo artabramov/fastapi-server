@@ -16,6 +16,7 @@ class UserRole(enum.Enum):
 class User(Base):
     __tablename__ = 'users'
     _meta_keys = ["user_summary", "user_contacts"]
+    _cachable = True
 
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))
@@ -33,7 +34,7 @@ class User(Base):
     jti_encrypted = Column(String(512), nullable=False, unique=True)
     userpic = Column(String(512), nullable=True, unique=True)
 
-    meta = relationship("UserMeta", back_populates="user")
+    meta = relationship("UserMeta", back_populates="user", lazy='select')
 
     def __init__(self, user_login: str, user_pass: str, first_name: str, last_name: str) -> None:
         """Init user model."""
@@ -49,3 +50,7 @@ class User(Base):
         self.mfa_key_encrypted = 'mfa-key-encrypted' + str(time())
         self.mfa_attempts = 0
         self.jti_encrypted = 'jti-encrypted' + str(time())
+
+    @property
+    def user_summary(self):
+        return None

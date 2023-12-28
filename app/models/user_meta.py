@@ -7,6 +7,7 @@ from app.db import Base
 
 class UserMeta(Base):
     __tablename__ = "users_meta"
+    _cachable = False
 
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))
@@ -15,7 +16,7 @@ class UserMeta(Base):
     meta_key = Column(String(40), nullable=False, index=True)
     meta_value = Column(String(512), nullable=False)
 
-    user = relationship("User", back_populates="meta")
+    user = relationship("User", back_populates="meta", lazy='select')
 
     def __init__(self, user_id: int, meta_key: str, meta_value: str) -> None:
         """Init user model."""

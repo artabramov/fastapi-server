@@ -21,6 +21,7 @@ class Config:
     REDIS_HOST: str
     REDIS_PORT: int
     REDIS_DECODE: bool
+    REDIS_EXPIRE: int
 
 
 @lru_cache
