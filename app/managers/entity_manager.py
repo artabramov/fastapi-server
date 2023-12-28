@@ -9,14 +9,16 @@ ENTITY_MANAGER_DELETE_ALL_BATCH_SIZE = 500
 class EntityManager:
     """Entity manager."""
 
-    def __init__(self, db) -> None:
+    def __init__(self, db, cache_manager) -> None:
         """Init entity manager object."""
         self.db = db
+        self.cache_manager = cache_manager
 
     def insert(self, obj: object, commit: bool = False) -> None:
         """Insert entity into database."""
         self.db.add(obj)
         self.db.flush()
+        # self.cache_manager.set(obj)
 
         if commit:
             self.commit()
