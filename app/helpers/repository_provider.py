@@ -12,11 +12,11 @@ class RepositoryProvider:
 
     def __init__(self, db: Session, cache: Redis, user: User = None) -> None:
         """Init Repository Provider object."""
-        cache_manager = CacheManager(cache)
-        self.entity_manager = EntityManager(db, cache_manager)
+        self.cache_manager = CacheManager(cache)
+        self.entity_manager = EntityManager(db)
         self.user = user
 
     def get(self, schema) -> object:
         """Return repository for schema."""
         if schema in [UserInsert, UserSelect]:
-            return UserRepository(self.entity_manager)
+            return UserRepository(self.entity_manager, self.cache_manager)

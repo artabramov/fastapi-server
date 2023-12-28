@@ -7,8 +7,9 @@ from app.errors.value_exists import ValueExists
 
 class UserRepository():
 
-    def __init__(self, entity_manager: EntityManager) -> None:
+    def __init__(self, entity_manager: EntityManager, cache_manager) -> None:
         self.entity_manager = entity_manager
+        self.cache_manager = cache_manager
 
     def insert(self, schema: UserInsert):
         if self.entity_manager.exists(User, user_login=schema.user_login):
@@ -26,6 +27,7 @@ class UserRepository():
                     self.entity_manager.insert(user_meta)
 
             self.entity_manager.commit()
+            self.cache_manager.set(user)
 
         except Exception as e:
             self.entity_manager.rollback()
@@ -34,5 +36,7 @@ class UserRepository():
         return user
 
     def select(self, id: int):
-        user = self.entity_manager.select(User, id=id)
+        user = self.cache_manager.get(User, id)
+        if not user:
+            user = self.entity_manager.select(User, id=id)
         return user

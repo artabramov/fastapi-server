@@ -3,6 +3,7 @@ from time import time
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, BigInteger, SmallInteger, String, Enum
 from sqlalchemy.orm import relationship
 from app.db import Base
+import functools
 
 
 class UserRole(enum.Enum):
@@ -16,7 +17,7 @@ class UserRole(enum.Enum):
 class User(Base):
     __tablename__ = 'users'
     _meta_keys = ["user_summary", "user_contacts"]
-    _cachable = True
+    # _cachable = True
 
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))
@@ -34,7 +35,7 @@ class User(Base):
     jti_encrypted = Column(String(512), nullable=False, unique=True)
     userpic = Column(String(512), nullable=True, unique=True)
 
-    meta = relationship("UserMeta", back_populates="user", lazy='select')
+    meta = relationship("UserMeta", back_populates="user", lazy='joined')
 
     def __init__(self, user_login: str, user_pass: str, first_name: str, last_name: str) -> None:
         """Init user model."""
@@ -51,6 +52,21 @@ class User(Base):
         self.mfa_attempts = 0
         self.jti_encrypted = 'jti-encrypted' + str(time())
 
+    # def __setattr__(self, key: str, value) -> None:
+    #     """Set user attributes."""
+    #     if key == 'meta':
+    #         super().__setattr__('_meta', value)
+
+    #     else:
+    #         super().__setattr__(key, value)
+
     @property
     def user_summary(self):
-        return None
+        # return functools.reduce(lambda a, b: a.meta_value if a.meta_key == "user_summary" else None, self.meta)
+        # return {x.meta_key: x.meta_value for x in self.meta if x.meta_key == "user_contacts"}.get("user_contacts")
+        return {x.meta_key: x.meta_value for x in self.meta}.get("user_summary")
+
+    @property
+    def user_contacts(self):
+        # return functools.reduce(lambda a, b: a.meta_value if a.meta_key == "user_contacts" else None, self.meta)
+        return {x.meta_key: x.meta_value for x in self.meta}.get("user_contacts")

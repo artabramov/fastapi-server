@@ -18,6 +18,9 @@ class UserSelect(BaseModel):
     user_login: str
     first_name: str
     last_name: str
+    # meta
+    user_summary: Optional[str] = None
+    user_contacts: Optional[str] = None
 
     class Config:
         from_attributes = True

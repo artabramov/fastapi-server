@@ -3,8 +3,8 @@ from redis import Redis
 from collections import OrderedDict
 import pickle
 from app.dotenv import get_config
-# from sqlalchemy.ext.serializer import dumps, loads
-from marshal import dumps, loads
+from sqlalchemy.ext.serializer import dumps, loads
+# from marshal import dumps, loads
 
 config = get_config()
 
