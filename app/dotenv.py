@@ -51,7 +51,4 @@ def get_config() -> Config:
         else:
             config.__dict__[key] = os.environ.get(key)
 
-    config.SQLALCHEMY_URI = 'postgresql+psycopg2://%s:%s@%s:%s/%s' % (
-        config.SQLALCHEMY_USERNAME, config.SQLALCHEMY_PASSWORD, config.SQLALCHEMY_HOST, config.SQLALCHEMY_PORT,
-        config.SQLALCHEMY_DATABASE)
     return config
