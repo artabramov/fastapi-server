@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from app.db import Base, engine
+from app.session import Base, engine
 from app.routers import user_routers
 from app.context import set_context_var
 from app.log import log

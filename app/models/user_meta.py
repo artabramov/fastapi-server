@@ -2,7 +2,7 @@ import enum
 from time import time
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, BigInteger, SmallInteger, String, Enum
 from sqlalchemy.orm import relationship
-from app.db import Base
+from app.session import Base
 
 
 class UserMeta(Base):

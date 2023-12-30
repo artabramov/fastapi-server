@@ -12,11 +12,10 @@ SessionLocal = sessionmaker(autocommit=config.SQLALCHEMY_AUTOCOMMIT, autoflush=c
 Base = declarative_base()
 
 
-# Dependency
-def get_db():
+def get_session():
     """Return SQLAlchemy session object."""
-    db = SessionLocal()
+    session = SessionLocal()
     try:
-        yield db
+        yield session
     finally:
-        db.close()
+        session.close()

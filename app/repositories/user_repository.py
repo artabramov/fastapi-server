@@ -18,19 +18,19 @@ class UserRepository():
         try:
             user = User(user_login=schema.user_login, user_pass=schema.user_pass, first_name=schema.first_name,
                         last_name=schema.last_name)
-            await self.entity_manager.insert(user)
+            await self.entity_manager.insert(user, commit=True)
 
             for meta_key in User._meta_keys:
                 meta_value = getattr(schema, meta_key)
                 if meta_value:
                     user_meta = UserMeta(user.id, meta_key, meta_value)
-                    self.entity_manager.insert(user_meta)
+                    await self.entity_manager.insert(user_meta)
 
-            self.entity_manager.commit()
+            await self.entity_manager.commit()
             self.cache_manager.set(user)
 
         except Exception as e:
-            self.entity_manager.rollback()
+            await self.entity_manager.rollback()
             raise e
 
         return user

@@ -4,6 +4,7 @@ from sqlalchemy import asc, desc, text
 from sqlalchemy.sql import func, exists
 from decimal import Decimal
 from app.log import log
+from sqlalchemy.orm import Session
 
 ENTITY_MANAGER_RESERVED_KEYS = ['subquery', 'order_by', 'order', 'limit', 'offset']
 ENTITY_MANAGER_DELETE_ALL_BATCH_SIZE = 500
@@ -12,24 +13,24 @@ ENTITY_MANAGER_DELETE_ALL_BATCH_SIZE = 500
 class EntityManager:
     """Entity Manager provides methods for working with SQLAlchemy entities in the database."""
 
-    def __init__(self, db) -> None:
+    def __init__(self, session: Session) -> None:
         """Init Entity Manager."""
-        self.db = db
+        self.session = session
 
     async def insert(self, obj: object, commit: bool = False) -> None:
         """Insert SQLAlchemy entity into database."""
-        self.db.add(obj)
-        self.db.flush()
+        self.session.add(obj)
+        self.session.flush()
 
         if commit:
-            self.commit()
+            await self.commit()
 
         log.debug("Insert SQLAlchemy entity into database, cls=%s, obj=%s, commit=%s" % (
             str(obj.__class__.__name__), str(obj.__dict__), commit))
 
     async def select(self, cls: object, **kwargs) -> object:
         """Select SQLAlchemy entity from database."""
-        obj = self.db.query(cls).filter(*self._extract_clauses([
+        obj = self.session.query(cls).filter(*self._extract_clauses([
             self._add_clause(cls, k, v) for k, v in kwargs.items()])).first()
 
         log.debug("Select SQLAlchemy entity from database, cls=%s, kwargs=%s, obj=%s" % (
@@ -37,18 +38,43 @@ class EntityManager:
 
         return obj
 
+    async def update(self, obj: object, commit: bool = False) -> None:
+        """Update SQLAlchemy entity in database."""
+        self.session.merge(obj)
+        self.session.flush()
+
+        if commit:
+            self.commit()
+
+        log.debug('Update SQLAlchemy entity in database, cls=%s, obj=%s.' % (
+            str(obj.__class__.__name__), str(obj.__dict__)))
+
+    async def delete(self, obj: object, commit: bool = False) -> None:
+        """Delete SQLAlchemy entity from database."""
+        self.session.delete(obj)
+        self.session.flush()
+
+        if commit:
+            self.commit()
+
+        log.debug('Delete SQLAlchemy entity from database, cls=%s, obj=%s.' % (
+            str(obj.__class__.__name__), str(obj.__dict__)))
+
     async def exists(self, cls: object, **kwargs) -> bool:
-        """Check is entity exist in database."""
-        res = self.db.query(exists().where(*self._get_where(cls, kwargs))).scalar()
+        """Check if SQLAlchemy entity exists in database."""
+        res = self.session.query(exists().where(*self._get_where(cls, kwargs))).scalar()
+
+        log.debug('Check if SQLAlchemy entity exists in database, cls=%s, kwargs=%s, res=%s' % (
+            str(cls.__class__.__name__), str(kwargs), res))
         return res
 
-    def commit(self) -> None:
+    async def commit(self) -> None:
         """Commit transaction."""
-        self.db.commit()
+        self.session.commit()
 
-    def rollback(self) -> None:
+    async def rollback(self) -> None:
         """Rollback transaction."""
-        self.db.rollback()
+        self.session.rollback()
 
     def _get_where(self, cls: object, kwargs: dict) -> list:
         """Create where expression."""
@@ -95,6 +121,6 @@ class EntityManager:
 
     def _get_subquery(self, **kwargs) -> object:
         """Get subquery."""
-        return self.db.session.query(kwargs['foreign_key']).filter(
+        return self.session.query(kwargs['foreign_key']).filter(
             *self._extract_clauses([self._add_clause(kwargs['subquery_cls'], k, v) for k, v in kwargs['subquery_kwargs'].items()])  # noqa E501
         ).subquery()

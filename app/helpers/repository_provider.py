@@ -10,10 +10,10 @@ from app.models.user import User
 class RepositoryProvider:
     """Repository provider."""
 
-    def __init__(self, db: Session, cache: Redis, user: User = None) -> None:
+    def __init__(self, session: Session, cache: Redis, user: User = None) -> None:
         """Init Repository Provider object."""
         self.cache_manager = CacheManager(cache)
-        self.entity_manager = EntityManager(db)
+        self.entity_manager = EntityManager(session)
         self.user = user
 
     async def get(self, schema) -> object:
