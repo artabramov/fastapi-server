@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from fastapi import Query
 from typing import Optional, List, Dict
+from app.models.user import UserRole
 
 
 class UserInsert(BaseModel):
@@ -15,6 +16,7 @@ class UserInsert(BaseModel):
 
 class UserSelect(BaseModel):
     id: int
+    user_role: UserRole
     user_login: str
     first_name: str
     last_name: str
@@ -24,3 +26,4 @@ class UserSelect(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {UserRole: lambda x: x.name}

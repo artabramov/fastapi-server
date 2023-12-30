@@ -3,7 +3,7 @@ from time import time
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, BigInteger, SmallInteger, String, Enum
 from sqlalchemy.orm import relationship
 from app.db import Base
-import functools
+from app.mixins.meta_mixin import MetaMixin
 
 
 class UserRole(enum.Enum):
@@ -14,10 +14,9 @@ class UserRole(enum.Enum):
     admin = 4
 
 
-class User(Base):
+class User(Base, MetaMixin):
     __tablename__ = 'users'
     _meta_keys = ["user_summary", "user_contacts"]
-    # _cachable = True
 
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))
@@ -51,22 +50,3 @@ class User(Base):
         self.mfa_key_encrypted = 'mfa-key-encrypted' + str(time())
         self.mfa_attempts = 0
         self.jti_encrypted = 'jti-encrypted' + str(time())
-
-    # def __setattr__(self, key: str, value) -> None:
-    #     """Set user attributes."""
-    #     if key == 'meta':
-    #         super().__setattr__('_meta', value)
-
-    #     else:
-    #         super().__setattr__(key, value)
-
-    @property
-    def user_summary(self):
-        # return functools.reduce(lambda a, b: a.meta_value if a.meta_key == "user_summary" else None, self.meta)
-        # return {x.meta_key: x.meta_value for x in self.meta if x.meta_key == "user_contacts"}.get("user_contacts")
-        return {x.meta_key: x.meta_value for x in self.meta}.get("user_summary")
-
-    @property
-    def user_contacts(self):
-        # return functools.reduce(lambda a, b: a.meta_value if a.meta_key == "user_contacts" else None, self.meta)
-        return {x.meta_key: x.meta_value for x in self.meta}.get("user_contacts")

@@ -7,7 +7,6 @@ from app.db import Base
 
 class UserMeta(Base):
     __tablename__ = "users_meta"
-    # _cachable = False
 
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))

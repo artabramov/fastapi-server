@@ -16,8 +16,8 @@ async def user_insert(db: Session = Depends(get_db), cache: Redis = Depends(get_
                       user_schema: UserInsert = Depends()):
     """Insert a user."""
     repository_provider = RepositoryProvider(db, cache)
-    user_repository = repository_provider.get(UserInsert)
-    user = user_repository.insert(user_schema)
+    user_repository = await repository_provider.get(UserInsert)
+    user = await user_repository.insert(user_schema)
     return user
 
 
@@ -25,6 +25,6 @@ async def user_insert(db: Session = Depends(get_db), cache: Redis = Depends(get_
 async def user_select(id: int, db: Session = Depends(get_db), cache: Redis = Depends(get_cache)):
     """Select a user."""
     repository_provider = RepositoryProvider(db, cache)
-    user_repository = repository_provider.get(UserSelect)
-    user = user_repository.select(id)
+    user_repository = await repository_provider.get(UserSelect)
+    user = await user_repository.select(id)
     return user

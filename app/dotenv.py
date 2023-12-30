@@ -10,6 +10,12 @@ DOTENV_FILE = '../.env'
 class Config:
     """Config dataclass."""
 
+    LOGGING_LEVEL: str
+    LOGGING_FORMAT: str
+    LOGGING_FILENAME: str
+    LOGGING_FILESIZE: int
+    LOGGING_FILES_LIMIT: int
+
     SQLALCHEMY_USERNAME: str
     SQLALCHEMY_PASSWORD: str
     SQLALCHEMY_HOST: str

@@ -11,8 +11,8 @@ class UserRepository():
         self.entity_manager = entity_manager
         self.cache_manager = cache_manager
 
-    def insert(self, schema: UserInsert):
-        if self.entity_manager.exists(User, user_login=schema.user_login):
+    async def insert(self, schema: UserInsert):
+        if await self.entity_manager.exists(User, user_login=schema.user_login):
             raise ValueExists(loc=("query", "user_login"), input=schema.user_login)
 
         try:
@@ -35,8 +35,8 @@ class UserRepository():
 
         return user
 
-    def select(self, id: int):
-        user = self.cache_manager.get(User, id)
+    async def select(self, id: int):
+        user = await self.cache_manager.get(User, id)
         if not user:
-            user = self.entity_manager.select(User, id=id)
+            user = await self.entity_manager.select(User, id=id)
         return user

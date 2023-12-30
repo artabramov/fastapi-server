@@ -16,7 +16,7 @@ class RepositoryProvider:
         self.entity_manager = EntityManager(db)
         self.user = user
 
-    def get(self, schema) -> object:
+    async def get(self, schema) -> object:
         """Return repository for schema."""
         if schema in [UserInsert, UserSelect]:
             return UserRepository(self.entity_manager, self.cache_manager)
