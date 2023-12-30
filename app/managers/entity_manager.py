@@ -1,3 +1,5 @@
+"""Entity Manager."""
+
 from sqlalchemy import asc, desc, text
 from sqlalchemy.sql import func, exists
 from decimal import Decimal
@@ -8,24 +10,31 @@ ENTITY_MANAGER_DELETE_ALL_BATCH_SIZE = 500
 
 
 class EntityManager:
-    """Entity manager."""
+    """Entity Manager provides methods for working with SQLAlchemy entities in the database."""
 
     def __init__(self, db) -> None:
-        """Init entity manager object."""
+        """Init Entity Manager."""
         self.db = db
 
-    def insert(self, obj: object, commit: bool = False) -> None:
-        """Insert entity into database."""
+    async def insert(self, obj: object, commit: bool = False) -> None:
+        """Insert SQLAlchemy entity into database."""
         self.db.add(obj)
         self.db.flush()
 
         if commit:
             self.commit()
 
+        log.debug("Insert SQLAlchemy entity into database, cls=%s, obj=%s, commit=%s" % (
+            str(obj.__class__.__name__), str(obj.__dict__), commit))
+
     async def select(self, cls: object, **kwargs) -> object:
-        """Select entity from database."""
-        obj = self.db.query(cls).filter(*self._extract_clauses([self._add_clause(cls, k, v) for k, v in kwargs.items()])).first()
-        log.debug("Entity selected from database, entity=")
+        """Select SQLAlchemy entity from database."""
+        obj = self.db.query(cls).filter(*self._extract_clauses([
+            self._add_clause(cls, k, v) for k, v in kwargs.items()])).first()
+
+        log.debug("Select SQLAlchemy entity from database, cls=%s, kwargs=%s, obj=%s" % (
+            str(cls.__name__), str(kwargs), str(obj.__dict__) if obj else None))
+
         return obj
 
     async def exists(self, cls: object, **kwargs) -> bool:

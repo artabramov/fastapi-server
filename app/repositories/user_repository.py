@@ -18,7 +18,7 @@ class UserRepository():
         try:
             user = User(user_login=schema.user_login, user_pass=schema.user_pass, first_name=schema.first_name,
                         last_name=schema.last_name)
-            self.entity_manager.insert(user)
+            await self.entity_manager.insert(user)
 
             for meta_key in User._meta_keys:
                 meta_value = getattr(schema, meta_key)
