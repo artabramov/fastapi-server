@@ -12,20 +12,11 @@ from uuid import uuid4
 from starlette.concurrency import iterate_in_threadpool
 
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     """Create SQLAlchemy tables."""
-#     Base.metadata.create_all(bind=engine)
-#     yield
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Create SQLAlchemy tables."""
-    # Base.metadata.create_all(bind=engine)
-    async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-        yield
+    Base.metadata.create_all(bind=engine)
+    yield
 
 
 app = FastAPI(lifespan=lifespan)
