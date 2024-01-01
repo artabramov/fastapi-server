@@ -28,3 +28,13 @@ def get_session():
         yield session
     finally:
         session.close()
+
+    # session = Session()
+    # try:
+    #     yield session
+    #     session.commit()
+    # except:
+    #     session.rollback()
+    #     raise
+    # finally:
+    #     session.close()

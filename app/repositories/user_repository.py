@@ -36,7 +36,13 @@ class UserRepository():
         return user
 
     async def select(self, id: int):
-        user = await self.cache_manager.get(User, id)
+        # user = await self.cache_manager.get(User, id)
+        user = None
         if not user:
-            user = await self.entity_manager.select(User, id=id)
+            user = await self.entity_manager.select(User, id)
         return user
+
+    async def select_all(self):
+        users = await self.entity_manager.select_all(User)
+        return users
+

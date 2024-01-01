@@ -27,3 +27,7 @@ class UserSelect(BaseModel):
     class Config:
         from_attributes = True
         json_encoders = {UserRole: lambda x: x.name}
+
+
+class UsersList(UserSelect):
+    users: List[UserSelect] = []

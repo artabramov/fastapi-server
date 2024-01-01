@@ -1,7 +1,7 @@
 """User routes."""
 
 from fastapi import APIRouter, Depends
-from app.schemas.user_schema import UserInsert, UserSelect
+from app.schemas.user_schema import UserInsert, UserSelect, UsersList
 from sqlalchemy.orm import Session
 from app.session import get_session
 from app.cache import get_cache
@@ -28,3 +28,12 @@ async def user_select(id: int, session: Session = Depends(get_session), cache: R
     user_repository = await repository_provider.get(UserSelect)
     user = await user_repository.select(id)
     return user
+
+
+@router.get('/users', response_model=UsersList, tags=['users'])
+async def users_list(session: Session = Depends(get_session), cache: Redis = Depends(get_cache)):
+    """Select a user."""
+    repository_provider = RepositoryProvider(session, cache)
+    user_repository = await repository_provider.get(UsersList)
+    users = await user_repository.select_all()
+    return {"users": users}
