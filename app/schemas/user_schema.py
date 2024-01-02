@@ -32,7 +32,8 @@ class UserSelect(BaseModel):
 class UserSearch(BaseModel):
     user_role__eq: Optional[str] = None
     user_login__eq: Optional[str] = None
-    full_name__like: Optional[str] = None
+    full_name__ilike: Optional[str] = None
+    user_contacts__ilike: Optional[str] = None
     offset: int = 0
     limit: int = Field(1, ge=1, le=168)
     order_by: Literal["id", "created_date", "updated_date", "user_login", "first_name", "last_name"] = "id"
