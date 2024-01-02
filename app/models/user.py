@@ -4,6 +4,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, BigInteger, SmallIn
 from sqlalchemy.orm import relationship
 from app.session import Base
 from app.mixins.meta_mixin import MetaMixin
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class UserRole(enum.Enum):
@@ -50,3 +51,8 @@ class User(Base, MetaMixin):
         self.mfa_key_encrypted = 'mfa-key-encrypted' + str(time())
         self.mfa_attempts = 0
         self.jti_encrypted = 'jti-encrypted' + str(time())
+
+    @hybrid_property
+    def full_name(self) -> str:
+        """Virtial full name."""
+        return self.first_name + ' ' + self.last_name

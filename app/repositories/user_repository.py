@@ -12,7 +12,7 @@ class UserRepository():
         self.cache_manager = cache_manager
 
     async def insert(self, schema: UserInsert):
-        if await self.entity_manager.exists(User, user_login=schema.user_login):
+        if await self.entity_manager.exists(User, user_login__eq=schema.user_login):
             raise ValueExists(loc=("query", "user_login"), input=schema.user_login)
 
         try:
@@ -42,7 +42,8 @@ class UserRepository():
             user = await self.entity_manager.select(User, id)
         return user
 
-    async def select_all(self):
-        users = await self.entity_manager.select_all(User)
+    async def select_all(self, schema):
+        kwargs = {key[0]: key[1] for key in schema if key[1]}
+        users = await self.entity_manager.select_all(User, **kwargs)
         return users
 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from fastapi import Query
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Literal
 from app.models.user import UserRole
 
 
@@ -29,5 +29,15 @@ class UserSelect(BaseModel):
         json_encoders = {UserRole: lambda x: x.name}
 
 
-class UsersList(UserSelect):
+class UserSearch(BaseModel):
+    user_role__eq: Optional[str] = None
+    user_login__eq: Optional[str] = None
+    full_name__like: Optional[str] = None
+    offset: int = 0
+    limit: int = Field(1, ge=1, le=168)
+    order_by: Literal["id", "created_date", "updated_date", "user_login", "first_name", "last_name"] = "id"
+    order: Literal["asc", "desc"] = "desc"
+
+
+class UserList(BaseModel):
     users: List[UserSelect] = []
