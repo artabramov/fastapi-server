@@ -3,6 +3,7 @@
 from sqlalchemy import asc, desc, text
 from sqlalchemy.sql import func, exists
 from app.log import log
+from decimal import Decimal
 from sqlalchemy.orm import Session
 
 _ORDER_BY, _ORDER = "order_by", "order"
@@ -84,7 +85,18 @@ class EntityManager:
         query = self.session.query(func.count(getattr(cls, "id"))).filter(*self._where(cls, **kwargs))
         res = query.one()[0]
 
-        log.debug('Entities counted in db. Class=%s, kwargs=%s, count=%s.' % (str(cls.__class__), str(kwargs), str(res)))
+        log.debug('Entities counted in db. Class=%s, kwargs=%s, count=%s.' % (
+            str(cls.__class__), str(kwargs), str(res)))
+
+        return res if res else 0
+
+    async def sum_all(self, cls: object, column: str, **kwargs) -> Decimal:
+        """Sum entities column in database."""
+        query = self.session.query(func.sum(getattr(cls, "id"))).filter(*self._where(cls, **kwargs))
+        res = query.one()[0]
+
+        log.debug('Entities summed in db. Class=%s, column=%s, kwargs=%s, sum=%s.' % (
+            str(cls.__class__), column, str(kwargs), str(res)))
 
         return res if res else 0
 
