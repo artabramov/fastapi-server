@@ -90,13 +90,13 @@ class EntityManager:
 
         return res if res else 0
 
-    async def sum_all(self, cls: object, column: str, **kwargs) -> Decimal:
+    async def sum_all(self, cls: object, column_name: str, **kwargs) -> Decimal:
         """Sum entities column in database."""
-        query = self.session.query(func.sum(getattr(cls, "id"))).filter(*self._where(cls, **kwargs))
+        query = self.session.query(func.sum(getattr(cls, column_name))).filter(*self._where(cls, **kwargs))
         res = query.one()[0]
 
-        log.debug('Entities summed in db. Class=%s, column=%s, kwargs=%s, sum=%s.' % (
-            str(cls.__class__), column, str(kwargs), str(res)))
+        log.debug('Entities summed in db. Class=%s, column_name=%s, kwargs=%s, sum=%s.' % (
+            str(cls.__class__), column_name, str(kwargs), str(res)))
 
         return res if res else 0
 
