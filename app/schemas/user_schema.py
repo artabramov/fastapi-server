@@ -41,3 +41,4 @@ class UserSearch(BaseModel):
 
 class UserList(BaseModel):
     users: List[UserSelect] = []
+    count: int

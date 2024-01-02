@@ -36,4 +36,5 @@ async def users_list(schema: UserSearch = Depends(), session: Session = Depends(
     repository_provider = RepositoryProvider(session, cache)
     user_repository = await repository_provider.get(UserList)
     users = await user_repository.select_all(schema)
-    return {"users": users}
+    count = await user_repository.count_all(schema)
+    return {"users": users, "count": count}

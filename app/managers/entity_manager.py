@@ -2,6 +2,7 @@
 
 from sqlalchemy import asc, desc, text
 from sqlalchemy.sql import func, exists
+from decimal import Decimal
 from app.log import log
 from sqlalchemy.orm import Session
 
@@ -77,6 +78,15 @@ class EntityManager:
             .offset(self._offset(**kwargs)) \
             .limit(self._limit(**kwargs))
         return query.all()
+
+    async def count_all(self, cls: object, **kwargs) -> int:
+        """Count entities in database."""
+        query = self.session.query(func.count(getattr(cls, "id"))).filter(*self._where(cls, **kwargs))
+        res = query.one()[0]
+
+        log.debug('Entities counted in db. Class=%s, kwargs=%s, count=%s.' % (str(cls.__class__), str(kwargs), str(res)))
+
+        return res if res else 0
 
     async def exists(self, cls: object, **kwargs) -> bool:
         """Check if SQLAlchemy entity exists in database."""
