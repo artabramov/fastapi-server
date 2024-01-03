@@ -24,87 +24,92 @@ _SQLALCHEMY_OPERATORS = {
 
 
 class EntityManager:
-    """Entity Manager provides methods for working with SQLAlchemy entities in the database."""
+    """Entity Manager provides methods for working with SQLAlchemy entities in Postgres database."""
 
     def __init__(self, session: Session) -> None:
         """Init Entity Manager."""
         self.session = session
 
     async def insert(self, obj: object, commit: bool = False) -> None:
-        """Insert SQLAlchemy entity into database."""
+        """Insert SQLAlchemy entity into Postgres database."""
         self.session.add(obj)
         self.session.flush()
 
-        log.debug("Insert SQLAlchemy entity into database, cls=%s, obj=%s, commit=%s" % (
+        log.debug("Insert SQLAlchemy entity into Postgres database, cls=%s, obj=%s, commit=%s" % (
             str(obj.__class__.__name__), str(obj.__dict__), commit))
 
         if commit:
             await self.commit()
 
     async def select(self, cls: object, id: int) -> object:
-        """Select SQLAlchemy entity from database."""
+        """Select SQLAlchemy entity from Postgres database."""
         obj = self.session.query(cls).filter(cls.id == id).first()
 
-        log.debug("Select SQLAlchemy entity from database, cls=%s, id=%s, obj=%s" % (
+        log.debug("Select SQLAlchemy entity from Postgres database, cls=%s, id=%s, obj=%s" % (
             str(cls.__name__), id, str(obj.__dict__) if obj else None))
 
         return obj
 
     async def update(self, obj: object, commit: bool = False) -> None:
-        """Update SQLAlchemy entity in database."""
+        """Update SQLAlchemy entity in Postgres database."""
         self.session.merge(obj)
         self.session.flush()
 
-        log.debug('Update SQLAlchemy entity in database, cls=%s, obj=%s.' % (
+        log.debug("Update SQLAlchemy entity in Postgres database, cls=%s, obj=%s." % (
             str(obj.__class__.__name__), str(obj.__dict__)))
 
         if commit:
             self.commit()
 
     async def delete(self, obj: object, commit: bool = False) -> None:
-        """Delete SQLAlchemy entity from database."""
+        """Delete SQLAlchemy entity from Postgres database."""
         self.session.delete(obj)
 
-        log.debug('Delete SQLAlchemy entity from database, cls=%s, obj=%s.' % (
+        log.debug("Delete SQLAlchemy entity from Postgres database, cls=%s, obj=%s." % (
             str(obj.__class__.__name__), str(obj.__dict__)))
 
         if commit:
             self.commit()
 
     async def select_all(self, cls: object, **kwargs) -> list:
-        """Select all SQLAlchemy entities from database."""
-        query = self.session.query(cls) \
+        """Select a bunch of SQLAlchemy entities from Postgres database."""
+        objs = self.session.query(cls) \
             .filter(*self._where(cls, **kwargs)) \
             .order_by(self._order_by(**kwargs)) \
             .offset(self._offset(**kwargs)) \
-            .limit(self._limit(**kwargs))
-        return query.all()
+            .limit(self._limit(**kwargs)) \
+            .all()
+
+        log.debug("Select a bunch of SQLAlchemy entities from Postgres database, cls=%s, kwargs=%s" % (
+            str(cls.__name__), str(kwargs)))
+
+        return objs
 
     async def count_all(self, cls: object, **kwargs) -> int:
-        """Count entities in database."""
+        """Count SQLAlchemy entities in Postgres database."""
         query = self.session.query(func.count(getattr(cls, "id"))).filter(*self._where(cls, **kwargs))
         res = query.one()[0]
 
-        log.debug('Entities counted in db. Class=%s, kwargs=%s, count=%s.' % (
-            str(cls.__class__), str(kwargs), str(res)))
+        log.debug("Count SQLAlchemy entities in Postgres database, cls=%s, kwargs=%s, count=%s." % (
+            str(cls.__class__), str(kwargs), res))
 
-        return res if res else 0
+        return res
 
     async def sum_all(self, cls: object, column_name: str, **kwargs) -> Decimal:
-        """Sum entities column in database."""
+        """Sum SQLAlchemy entities column in Postgres database."""
         query = self.session.query(func.sum(getattr(cls, column_name))).filter(*self._where(cls, **kwargs))
         res = query.one()[0]
 
-        log.debug('Entities summed in db. Class=%s, column_name=%s, kwargs=%s, sum=%s.' % (
-            str(cls.__class__), column_name, str(kwargs), str(res)))
+        log.debug("Sum SQLAlchemy entities column in Postgres database, cls=%s, column_name=%s, kwargs=%s, sum=%s." % (
+            str(cls.__class__), column_name, str(kwargs), res))
 
-        return res if res else 0
+        return res
 
     async def exists(self, cls: object, **kwargs) -> bool:
-        """Check if SQLAlchemy entity exists in database."""
+        """Check if SQLAlchemy entity exists in Postgres database."""
         res = self.session.query(exists().where(*self._where(cls, **kwargs))).scalar()
 
-        log.debug("Check if SQLAlchemy entity exists in database, cls=%s, kwargs=%s, res=%s." % (
+        log.debug("Check if SQLAlchemy entity exists in Postgres database, cls=%s, kwargs=%s, res=%s." % (
             str(cls.__class__.__name__), str(kwargs), res))
 
         return res
@@ -116,7 +121,7 @@ class EntityManager:
     async def exec(self, sql: str, commit: bool = False) -> object:
         """Execute a raw query."""
         res = self.db.engine.execute(text(sql))
-        self.logger.debug("Query executed, sql=%s." % sql)
+        self.logger.debug("Execute a raw query, sql=%s." % sql)
 
         if commit:
             self.commit()
@@ -126,18 +131,18 @@ class EntityManager:
     async def commit(self) -> None:
         """Commit current transaction."""
         self.session.commit()
-        log.debug("Transaction commit.")
+        log.debug("Commit current transaction.")
 
     async def rollback(self) -> None:
         """Rollback current transaction."""
         self.session.rollback()
-        log.debug("Transaction rollback.")
+        log.debug("Rollback current transaction.")
 
     def _where(self, cls, **kwargs):
-        """Make "WHERE" statements.
+        """Make "WHERE" statement.
 
         How to implement dynamic API filtering using query parameters:
-        https://www.mindee.com/blog/flask-sqlalchemy        
+        https://www.mindee.com/blog/flask-sqlalchemy
         """
         where = []
         for key in {x: kwargs[x] for x in kwargs if x not in _SQLALCHEMY_RESERVED}:
