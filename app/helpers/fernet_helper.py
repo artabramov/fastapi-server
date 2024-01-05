@@ -13,7 +13,7 @@ class FernetHelper:
 
     @staticmethod
     def _create_encryption_key() -> bytes:
-        """Generate encryption key."""
+        """Generate encryption key for config."""
         return Fernet.generate_key()
 
     def encrypt_value(self, value: str) -> str:

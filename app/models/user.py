@@ -67,7 +67,7 @@ class User(Base, MetaMixin):
             self.mfa_key_encrypted = fernet_helper.encrypt_value(value)
 
         # elif key == "jti":
-        #     self.jti_encrypted = fernet_helper.encrypt_value(value)
+        #     self.jti_encrypted = await fernet_helper.encrypt_value(value)
 
         else:
             super().__setattr__(key, value)

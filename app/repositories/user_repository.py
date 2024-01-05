@@ -9,10 +9,12 @@ from app.helpers.mfa_helper import MFAHelper
 class UserRepository():
 
     def __init__(self, entity_manager: EntityManager, cache_manager) -> None:
+        """Init User Repository."""
         self.entity_manager = entity_manager
         self.cache_manager = cache_manager
 
     async def insert(self, schema: UserInsert):
+        """Insert a new user."""
         if await self.entity_manager.exists(User, user_login__eq=schema.user_login):
             raise ValueExists(loc=("query", "user_login"), input=schema.user_login)
 
@@ -20,9 +22,8 @@ class UserRepository():
             user = User(user_login=schema.user_login, user_pass=schema.user_pass, first_name=schema.first_name,
                         last_name=schema.last_name)
 
-            user.mfa_key = await MFAHelper.generate_mfa_key()
-            MFAHelper.create_mfa_image(user.user_login, user.mfa_key)
-
+            user.mfa_key = MFAHelper.generate_mfa_key()
+            await MFAHelper.create_mfa_image(user.user_login, user.mfa_key)
             await self.entity_manager.insert(user)
 
             for meta_key in User._meta_keys:

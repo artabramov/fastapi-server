@@ -25,7 +25,7 @@ class MFAHelper:
     """MFA helper."""
 
     @staticmethod
-    async def generate_mfa_key() -> bytes:
+    def generate_mfa_key() -> bytes:
         """Generate a random MFA key."""
         return pyotp.random_base32()
 
@@ -36,7 +36,7 @@ class MFAHelper:
         return totp.now()
 
     @staticmethod
-    def create_mfa_image(user_login: str, mfa_key: str) -> None:
+    async def create_mfa_image(user_login: str, mfa_key: str) -> None:
         """Create MFA image."""
         qr = qrcode.QRCode(version=MFA_IMAGE_VERSION, error_correction=qrcode.constants.ERROR_CORRECT_L,
                            box_size=MFA_IMAGE_SIZE, border=MFA_IMAGE_BORDER)
@@ -46,3 +46,10 @@ class MFAHelper:
         path = FileManager.path_join(config.BASE_PATH, MFA_IMAGE_RELATIVE_DIR, mfa_key + '.' + MFA_IMAGE_EXTENSION)
         img.save(path)
         log.debug("Create MFA image, path=%s." % path)
+
+    @staticmethod
+    async def delete_mfa_image(mfa_key: str) -> None:
+        """Delete MFA image."""
+        path = FileManager.path_join(config.BASE_PATH, MFA_IMAGE_RELATIVE_DIR, mfa_key + '.' + MFA_IMAGE_EXTENSION)
+        FileManager.file_delete(path)
+        log.debug("Delete MFA image, path=%s." % path)
