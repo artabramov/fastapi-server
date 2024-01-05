@@ -2,7 +2,7 @@
 
 from sqlalchemy import asc, desc, text
 from sqlalchemy.sql import func, exists
-from app.log import log
+from app.log import get_log
 from decimal import Decimal
 from sqlalchemy.orm import Session
 
@@ -21,6 +21,8 @@ _SQLALCHEMY_OPERATORS = {
     "like": "like",
     "ilike": "ilike",
 }
+
+log = get_log()
 
 
 class EntityManager:
@@ -80,8 +82,8 @@ class EntityManager:
             .limit(self._limit(**kwargs)) \
             .all()
 
-        log.debug("Select a bunch of SQLAlchemy entities from Postgres database, cls=%s, kwargs=%s" % (
-            str(cls.__name__), str(kwargs)))
+        log.debug("Select a bunch of SQLAlchemy entities from Postgres database, cls=%s, kwargs=%s, objs=%s" % (
+            str(cls.__name__), str(kwargs), str([obj.__dict__ for obj in objs])))
 
         return objs
 
@@ -91,7 +93,7 @@ class EntityManager:
         res = query.one()[0]
 
         log.debug("Count SQLAlchemy entities in Postgres database, cls=%s, kwargs=%s, count=%s." % (
-            str(cls.__class__), str(kwargs), res))
+            str(cls.__name__), str(kwargs), res))
 
         return res
 
@@ -101,7 +103,7 @@ class EntityManager:
         res = query.one()[0]
 
         log.debug("Sum SQLAlchemy entities column in Postgres database, cls=%s, column_name=%s, kwargs=%s, sum=%s." % (
-            str(cls.__class__), column_name, str(kwargs), res))
+            str(cls.__name__), column_name, str(kwargs), res))
 
         return res
 
@@ -110,7 +112,7 @@ class EntityManager:
         res = self.session.query(exists().where(*self._where(cls, **kwargs))).scalar()
 
         log.debug("Check if SQLAlchemy entity exists in Postgres database, cls=%s, kwargs=%s, res=%s." % (
-            str(cls.__class__.__name__), str(kwargs), res))
+            str(cls.__name__), str(kwargs), res))
 
         return res
 
@@ -129,14 +131,14 @@ class EntityManager:
         return res
 
     async def commit(self) -> None:
-        """Commit current transaction."""
+        """Commit transaction."""
         self.session.commit()
-        log.debug("Commit current transaction.")
+        log.debug("Commit transaction.")
 
     async def rollback(self) -> None:
-        """Rollback current transaction."""
+        """Rollback transaction."""
         self.session.rollback()
-        log.debug("Rollback current transaction.")
+        log.debug("Rollback transaction.")
 
     def _where(self, cls, **kwargs):
         """Make "WHERE" statement.

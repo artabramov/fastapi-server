@@ -12,9 +12,9 @@ router = APIRouter()
 
 
 @router.post('/user', response_model=UserSelect, tags=['users'])
-async def user_insert(session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
-                      user_schema: UserInsert = Depends()):
-    """Insert a user."""
+async def user_register(session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
+                        user_schema: UserInsert = Depends()):
+    """Register a user."""
     repository_provider = RepositoryProvider(session, cache)
     user_repository = await repository_provider.get(UserInsert)
     user = await user_repository.insert(user_schema)

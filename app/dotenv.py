@@ -3,8 +3,9 @@
 import os
 from dotenv import load_dotenv
 from functools import lru_cache
+from typing import Optional
 
-DOTENV_FILE = '../.env'
+DOTENV_FILE = "../.env"
 
 
 class Config:
@@ -29,6 +30,14 @@ class Config:
     REDIS_DECODE: bool
     REDIS_EXPIRE: int
 
+    FERNET_ENCRYPTION_STRING: str
+    FERNET_ENCRYPTION_KEY: Optional[bytes]
+
+    HASH_SALT: str
+
+    BASE_PATH: str
+    BASE_URL: str
+
 
 @lru_cache
 def get_config() -> Config:
@@ -37,18 +46,23 @@ def get_config() -> Config:
     config = Config()
 
     for key in config.__annotations__:
-        value = os.environ.get(key).strip().lower()
+        value = os.environ.get(key)
 
-        if value == 'true':
+        if value == "True":
             config.__dict__[key] = True
 
-        elif value == 'false':
+        elif value == "False":
             config.__dict__[key] = False
+
+        elif value == "None":
+            config.__dict__[key] = None
 
         elif value.isdigit():
             config.__dict__[key] = int(os.environ.get(key))
 
         else:
             config.__dict__[key] = os.environ.get(key)
+
+    config.FERNET_ENCRYPTION_KEY = bytes(config.FERNET_ENCRYPTION_STRING, "utf-8")
 
     return config
