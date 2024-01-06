@@ -1,11 +1,12 @@
 from app.models.user import User
 from app.models.user_meta import UserMeta
-from app.schemas.user_schema import UserInsert #, UserSelect
+from app.schemas.user_schema import UserRegister, UserSelect, UsersList
 from app.managers.entity_manager import EntityManager
 from app.errors.value_exists import ValueExists
 from app.helpers.mfa_helper import MFAHelper
 from app.helpers.jwt_helper import JWTHelper
 from app.dotenv import get_config
+from fastapi import HTTPException
 
 config = get_config()
 jwt_helper = JWTHelper(config.JWT_SECRET, config.JWT_ALGORITHM)
@@ -18,7 +19,7 @@ class UserRepository():
         self.entity_manager = entity_manager
         self.cache_manager = cache_manager
 
-    async def register(self, user_schema: UserInsert):
+    async def register(self, user_schema: UserRegister):
         """Register a new user."""
         if await self.entity_manager.exists(User, user_login__eq=user_schema.user_login):
             raise ValueExists(loc=("query", "user_login"), input=user_schema.user_login)
@@ -50,10 +51,15 @@ class UserRepository():
 
         return user
 
-    async def select(self, user_id: int):
-        user = await self.cache_manager.get(User, user_id)
+    async def select(self, user_schema: UserSelect):
+        """Select user."""
+        user = await self.cache_manager.get(User, user_schema.id)
         if not user:
-            user = await self.entity_manager.select(User, user_id)
+            user = await self.entity_manager.select(User, user_schema.id)
+
+        if not user:
+            raise HTTPException(status_code=404)
+
         return user
 
     async def select_all(self, schema):

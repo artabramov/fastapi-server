@@ -4,11 +4,7 @@ from typing import Optional, List, Dict, Literal
 from app.models.user import UserRole
 
 
-class UserId(BaseModel):
-    id: int
-
-
-class UserInsert(BaseModel):
+class UserRegister(BaseModel):
     user_login: str = Field(Query(..., min_length=2, max_length=10))
     user_pass: str
     first_name: str = Field(Query(..., min_length=2, max_length=40))
@@ -20,20 +16,9 @@ class UserInsert(BaseModel):
 
 class UserSelect(BaseModel):
     id: int
-    user_role: UserRole
-    user_login: str
-    first_name: str
-    last_name: str
-    # meta
-    user_summary: Optional[str] = None
-    user_contacts: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-        json_encoders = {UserRole: lambda x: x.name}
 
 
-class UserSearch(BaseModel):
+class UsersList(BaseModel):
     user_role__eq: Optional[str] = None
     user_login__eq: Optional[str] = None
     full_name__ilike: Optional[str] = None
@@ -42,8 +27,3 @@ class UserSearch(BaseModel):
     limit: int = Field(1, ge=1, le=168)
     order_by: Literal["id", "created_date", "updated_date", "user_login", "first_name", "last_name"] = "id"
     order: Literal["asc", "desc"] = "desc"
-
-
-class UserList(BaseModel):
-    users: List[UserSelect] = []
-    count: int

@@ -10,6 +10,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from app.helpers.fernet_helper import FernetHelper
 from app.helpers.hash_helper import HashHelper
 from app.dotenv import get_config
+from app.helpers.mfa_helper import MFA_IMAGE_RELATIVE_URL, MFA_IMAGE_EXTENSION
 
 config = get_config()
 fernet_helper = FernetHelper(config.FERNET_ENCRYPTION_KEY)
@@ -79,3 +80,16 @@ class User(Base, MetaMixin):
     def full_name(self) -> str:
         """Virtial full name."""
         return self.first_name + ' ' + self.last_name
+    
+    @property
+    def mfa_image(self) -> str:
+        return config.BASE_URL + MFA_IMAGE_RELATIVE_URL + self.getattr("mfa_key") + "." + MFA_IMAGE_EXTENSION
+
+    async def to_dict(self):
+        return {
+            "id": self.id,
+            "created_date": self.created_date,
+            "updated_date": self.updated_date,
+            "user_role": self.user_role.name,
+            "user_login": self.user_login,
+        }

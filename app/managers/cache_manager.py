@@ -25,14 +25,14 @@ class CacheManager:
 
     async def get(self, cls: object, obj_id: int) -> object:
         """Select SQLAlchemy object from Redis cache."""
-        obj = self.cache.get('%s:%s' % (cls.__tablename__, obj_id))
+        obj_bytes = self.cache.get('%s:%s' % (cls.__tablename__, obj_id))
+        obj = loads(obj_bytes) if obj_bytes else None
 
         log.debug("Select SQLAlchemy object from Redis cache, cls=%s, obj_id=%s, obj=%s" % (
             str(cls.__name__), obj_id, str(obj.__dict__) if obj else None
         ))
 
-        if obj:
-            return loads(obj)
+        return obj
 
     async def delete(self, cls: object, obj_id: int):
         """Delete SQLAlchemy object from Redis cache."""
