@@ -4,6 +4,10 @@ from typing import Optional, List, Dict, Literal
 from app.models.user import UserRole
 
 
+class UserId(BaseModel):
+    id: int
+
+
 class UserInsert(BaseModel):
     user_login: str = Field(Query(..., min_length=2, max_length=10))
     user_pass: str

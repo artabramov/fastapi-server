@@ -4,6 +4,11 @@ from app.schemas.user_schema import UserInsert #, UserSelect
 from app.managers.entity_manager import EntityManager
 from app.errors.value_exists import ValueExists
 from app.helpers.mfa_helper import MFAHelper
+from app.helpers.jwt_helper import JWTHelper
+from app.dotenv import get_config
+
+config = get_config()
+jwt_helper = JWTHelper(config.JWT_SECRET, config.JWT_ALGORITHM)
 
 
 class UserRepository():
@@ -13,22 +18,25 @@ class UserRepository():
         self.entity_manager = entity_manager
         self.cache_manager = cache_manager
 
-    async def insert(self, schema: UserInsert):
-        """Insert a new user."""
-        if await self.entity_manager.exists(User, user_login__eq=schema.user_login):
-            raise ValueExists(loc=("query", "user_login"), input=schema.user_login)
+    async def register(self, user_schema: UserInsert):
+        """Register a new user."""
+        if await self.entity_manager.exists(User, user_login__eq=user_schema.user_login):
+            raise ValueExists(loc=("query", "user_login"), input=user_schema.user_login)
 
         try:
-            user = User(user_login=schema.user_login, user_pass=schema.user_pass, first_name=schema.first_name,
-                        last_name=schema.last_name)
+            jti = await jwt_helper.generate_jti()
+            mfa_key = await MFAHelper.generate_mfa_key()
+            await MFAHelper.create_mfa_image(user_schema.user_login, mfa_key)
 
-            user.mfa_key = MFAHelper.generate_mfa_key()
-            await MFAHelper.create_mfa_image(user.user_login, user.mfa_key)
+            user = User(user_schema.user_login, user_schema.first_name, user_schema.last_name)
+            await user.setattr("jti", jti)
+            await user.setattr("user_pass", user_schema.user_pass)
+            await user.setattr("mfa_key", mfa_key)
             await self.entity_manager.insert(user)
 
             for meta_key in User._meta_keys:
-                meta_value = getattr(schema, meta_key)
-                if meta_value:
+                if hasattr(user_schema, meta_key):
+                    meta_value = getattr(user_schema, meta_key)
                     user_meta = UserMeta(user.id, meta_key, meta_value)
                     await self.entity_manager.insert(user_meta)
 
@@ -36,15 +44,16 @@ class UserRepository():
             await self.cache_manager.set(user)
 
         except Exception as e:
+            await MFAHelper.delete_mfa_image(mfa_key)
             await self.entity_manager.rollback()
             raise e
 
         return user
 
-    async def select(self, id: int):
-        user = await self.cache_manager.get(User, id)
+    async def select(self, user_id: int):
+        user = await self.cache_manager.get(User, user_id)
         if not user:
-            user = await self.entity_manager.select(User, id)
+            user = await self.entity_manager.select(User, user_id)
         return user
 
     async def select_all(self, schema):

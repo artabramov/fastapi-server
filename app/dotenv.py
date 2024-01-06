@@ -33,6 +33,9 @@ class Config:
     FERNET_ENCRYPTION_STRING: str
     FERNET_ENCRYPTION_KEY: Optional[bytes]
 
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
+
     HASH_SALT: str
 
     BASE_PATH: str

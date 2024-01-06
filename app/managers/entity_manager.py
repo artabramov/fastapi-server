@@ -43,12 +43,12 @@ class EntityManager:
         if commit:
             await self.commit()
 
-    async def select(self, cls: object, id: int) -> object:
+    async def select(self, cls: object, obj_id: int) -> object:
         """Select SQLAlchemy object from Postgres database."""
-        obj = self.session.query(cls).filter(cls.id == id).first()
+        obj = self.session.query(cls).filter(cls.id == obj_id).first()
 
-        log.debug("Select SQLAlchemy object from Postgres database, cls=%s, id=%s, obj=%s" % (
-            str(cls.__name__), id, str(obj.__dict__) if obj else None))
+        log.debug("Select SQLAlchemy object from Postgres database, cls=%s, obj_id=%s, obj=%s" % (
+            str(cls.__name__), obj_id, str(obj.__dict__) if obj else None))
 
         return obj
 

@@ -25,7 +25,7 @@ class MFAHelper:
     """MFA helper."""
 
     @staticmethod
-    def generate_mfa_key() -> bytes:
+    async def generate_mfa_key() -> bytes:
         """Generate a random MFA key."""
         return pyotp.random_base32()
 

@@ -1,3 +1,5 @@
+"""User SQLAlchemy model."""
+
 import enum
 from time import time
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, BigInteger, SmallInteger, String, Enum
@@ -24,7 +26,7 @@ class UserRole(enum.Enum):
 
 class User(Base, MetaMixin):
     __tablename__ = "users"
-    _meta_keys = ["user_summary", "user_contacts"]
+    _meta_keys = ["userpic", "user_summary", "user_contacts"]
 
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))
@@ -40,44 +42,40 @@ class User(Base, MetaMixin):
     mfa_key_encrypted = Column(String(512), nullable=False, unique=True)
     mfa_attempts = Column(SmallInteger(), nullable=False, default=0)
     jti_encrypted = Column(String(512), nullable=False, unique=True)
-    userpic = Column(String(512), nullable=True, unique=True)
 
     meta = relationship("UserMeta", back_populates="user", lazy='joined')
 
-    def __init__(self, user_login: str, user_pass: str, first_name: str, last_name: str) -> None:
-        """Init user model."""
+    def __init__(self, user_login: str, first_name: str, last_name: str):
+        """Init User SQLAlchemy object."""
         self.suspended_date = 0
         self.user_role = UserRole.none
         self.user_login = user_login
         self.first_name = first_name
         self.last_name = last_name
-        self.user_pass = user_pass
         self.pass_attempts = 0
         self.pass_accepted = False
         self.mfa_attempts = 0
-        self.jti_encrypted = 'jti-encrypted' + str(time())
 
-    def __setattr__(self, key: str, value) -> None:
-        """Set user attributes."""
+    async def setattr(self, key: str, value: str) -> None:
+        """Set attribute."""
         if key == "user_pass":
-            super().__setattr__("user_pass", value)
-            self.pass_hash = hash_helper.get_hash(value)
+            self.pass_hash = await hash_helper.hash(value)
 
         elif key == "mfa_key":
-            self.mfa_key_encrypted = fernet_helper.encrypt_value(value)
+            self.mfa_key_encrypted = await fernet_helper.encrypt_value(value)
 
-        # elif key == "jti":
-        #     self.jti_encrypted = await fernet_helper.encrypt_value(value)
+        elif key == "jti":
+            self.jti_encrypted = await fernet_helper.encrypt_value(value)
 
-        else:
-            super().__setattr__(key, value)
+    async def getattr(self, key: str):
+        """Get attribute."""
+        if key == "mfa_key":
+            return await fernet_helper.decrypt_value(self.mfa_key_encrypted)
+
+        elif key == "jti":
+            return await fernet_helper.decrypt_value(self.jti_encrypted)
 
     @hybrid_property
     def full_name(self) -> str:
         """Virtial full name."""
         return self.first_name + ' ' + self.last_name
-
-    @property
-    def mfa_key(self) -> str:
-        """Get decrypted mfa_key."""
-        return fernet_helper.decrypt_value(self.mfa_key_encrypted)
