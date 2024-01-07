@@ -23,6 +23,7 @@ async def user_register(session: Session = Depends(get_session), cache: Redis = 
     user_repository = await repository_helper.get_repository(user_schema)
     user = await user_repository.register(user_schema)
     return {
+        "user_id": user.id,
         "mfa_key": await user.getattr("mfa_key"),
         'mfa_image': config.BASE_URL + MFA_IMAGE_RELATIVE_URL + await user.getattr("mfa_key") + "." + MFA_IMAGE_EXTENSION,
     }
