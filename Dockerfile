@@ -20,12 +20,6 @@ RUN apt-get install -y ntp
 RUN apt-get install -y sudo
 RUN apt install -y git
 
-RUN apt-get install -y apache2 apache2-dev
-RUN a2enmod rewrite
-RUN a2enmod proxy
-RUN apt-get clean
-RUN cp --force ./000-default.conf /etc/apache2/sites-available/000-default.conf
-
 RUN pip3 install fastapi[all]
 RUN pip3 install uvicorn[standard]
 RUN pip3 install python-dotenv
