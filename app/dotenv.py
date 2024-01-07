@@ -31,15 +31,18 @@ class Config:
     REDIS_EXPIRE: int
 
     FERNET_ENCRYPTION_STRING: str
-    FERNET_ENCRYPTION_KEY: Optional[bytes]
 
     JWT_SECRET: str
     JWT_ALGORITHM: str
 
     HASH_SALT: str
 
+    API_PREFIX: str
+
     BASE_PATH: str
     BASE_URL: str
+
+    DATA_PATH: str
 
 
 @lru_cache
@@ -51,14 +54,14 @@ def get_config() -> Config:
     for key in config.__annotations__:
         value = os.environ.get(key)
 
-        if value == "True":
+        if value == "None":
+            config.__dict__[key] = None
+
+        elif value == "True":
             config.__dict__[key] = True
 
         elif value == "False":
             config.__dict__[key] = False
-
-        elif value == "None":
-            config.__dict__[key] = None
 
         elif value.isdigit():
             config.__dict__[key] = int(os.environ.get(key))

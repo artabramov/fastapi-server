@@ -9,8 +9,12 @@ from app.routers import user_routers
 from app.context import set_context_var
 from app.log import get_log
 from uuid import uuid4
-from starlette.concurrency import iterate_in_threadpool
 from fastapi.staticfiles import StaticFiles
+from app.dotenv import get_config
+from app.managers.file_manager import FileManager
+
+config = get_config()
+log = get_log()
 
 
 @asynccontextmanager
@@ -21,10 +25,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-# app = FastAPI(lifespan=lifespan, root_path="/api/v1", openapi_url="/api/v1/openapi.json")
-app.include_router(user_routers.router, prefix="/api/v1")
-app.mount("/mfa", StaticFiles(directory="/memo/data/mfa", html=False), name="/memo/data/mfa")
-log = get_log()
+app.include_router(user_routers.router, prefix=config.API_PREFIX)
+
+mfa_path = FileManager.path_join(config.DATA_PATH, "mfa")
+app.mount("/mfa", StaticFiles(directory=mfa_path, html=False), name=mfa_path)
 
 
 @app.middleware("http")

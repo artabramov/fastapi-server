@@ -7,6 +7,7 @@ from app.helpers.mfa_helper import MFAHelper
 from app.helpers.jwt_helper import JWTHelper
 from app.dotenv import get_config
 from fastapi import HTTPException
+from app.helpers.meta_helper import MetaHelper
 
 config = get_config()
 jwt_helper = JWTHelper(config.JWT_SECRET, config.JWT_ALGORITHM)
@@ -35,11 +36,7 @@ class UserRepository():
             await user.setattr("mfa_key", mfa_key)
             await self.entity_manager.insert(user)
 
-            for meta_key in User._meta_keys:
-                if hasattr(user_schema, meta_key):
-                    meta_value = getattr(user_schema, meta_key)
-                    user_meta = UserMeta(user.id, meta_key, meta_value)
-                    await self.entity_manager.insert(user_meta)
+            await MetaHelper.set(self.entity_manager, User, user.id, user_schema, UserMeta)
 
             await self.entity_manager.commit()
             await self.cache_manager.set(user)

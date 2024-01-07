@@ -1,9 +1,10 @@
-class MetaMixin:
-    def __getattr__(self, attr):
-        if attr in self._meta_keys:
-            return self._get_meta_value(attr)
-        else:
-            return self.__getattribute__(attr)
+"""Meta mixin."""
 
-    def _get_meta_value(self, meta_key: str) -> str:
-        return next(iter([x.meta_value for x in self.meta if x.meta_key == meta_key]), None)
+class MetaMixin:
+    """Mixin for classes that contain meta data."""
+    
+    async def getmeta(self, meta_key: str):
+        """Return meta value."""
+        meta_list = [x for x in self.meta if x.meta_key == meta_key]
+        if meta_list:
+            return meta_list[0].meta_value

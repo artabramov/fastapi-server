@@ -27,7 +27,8 @@ class UserRole(enum.Enum):
 
 class User(Base, MetaMixin):
     __tablename__ = "users"
-    _meta_keys = ["userpic", "user_summary", "user_contacts"]
+    _meta_attrs = ["userpic", "user_summary", "user_contacts"]
+    _encrypted_attrs = ["mfa_key", "jti"]
 
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))
@@ -44,7 +45,7 @@ class User(Base, MetaMixin):
     mfa_attempts = Column(SmallInteger(), nullable=False, default=0)
     jti_encrypted = Column(String(512), nullable=False, unique=True)
 
-    meta = relationship("UserMeta", back_populates="user", lazy='joined')
+    meta = relationship("UserMeta", back_populates="user", lazy="joined")
 
     def __init__(self, user_login: str, first_name: str, last_name: str):
         """Init User SQLAlchemy object."""
@@ -58,28 +59,22 @@ class User(Base, MetaMixin):
         self.mfa_attempts = 0
 
     async def setattr(self, key: str, value: str) -> None:
-        """Set attribute."""
-        if key == "user_pass":
+        """Set encrypted/hashed attribute."""
+        if key in self._encrypted_attrs:
+            setattr(self, key + "_encrypted", await fernet_helper.encrypt_value(value))
+        
+        elif key == "user_pass":
             self.pass_hash = await hash_helper.hash(value)
 
-        elif key == "mfa_key":
-            self.mfa_key_encrypted = await fernet_helper.encrypt_value(value)
-
-        elif key == "jti":
-            self.jti_encrypted = await fernet_helper.encrypt_value(value)
-
     async def getattr(self, key: str):
-        """Get attribute."""
-        if key == "mfa_key":
-            return await fernet_helper.decrypt_value(self.mfa_key_encrypted)
-
-        elif key == "jti":
-            return await fernet_helper.decrypt_value(self.jti_encrypted)
+        """Get decrypted attribute."""
+        if key in self._encrypted_attrs:
+            return await fernet_helper.decrypt_value(getattr(self, key + "_encrypted"))
 
     @hybrid_property
     def full_name(self) -> str:
-        """Virtial full name."""
-        return self.first_name + ' ' + self.last_name
+        """User full name."""
+        return self.first_name + " " + self.last_name
     
     @property
     def mfa_image(self) -> str:
@@ -92,4 +87,6 @@ class User(Base, MetaMixin):
             "updated_date": self.updated_date,
             "user_role": self.user_role.name,
             "user_login": self.user_login,
+            "user_summary": await self.getmeta("user_summary"),
+            "user_contacts": await self.getmeta("user_contacts"),
         }
