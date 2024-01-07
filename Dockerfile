@@ -31,8 +31,6 @@ RUN pip3 install uvicorn[standard]
 RUN pip3 install python-dotenv
 RUN pip3 install SQLAlchemy
 RUN pip3 install psycopg2-binary
-# RUN pip3 install asyncpg
-# RUN pip3 install sqlalchemy[asyncio]
 RUN pip3 install redis
 RUN pip3 install pyotp
 RUN pip3 install qrcode[pil]

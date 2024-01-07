@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from functools import lru_cache
 from typing import Optional
 
-DOTENV_FILE = "../.env"
+DOTENV_FILE = "/memo/.env"
 
 
 class Config:
