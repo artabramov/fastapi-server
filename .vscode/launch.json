@@ -11,8 +11,8 @@
                 "app.app:app",
                 "--host", "0.0.0.0",
                 "--port", "8081",
-                "--reload",
-                "--root-path", "/api/v1"
+                "--reload"
+                // "--root-path", "/api/v1"
             ],
             "jinja": true,
             "justMyCode": true

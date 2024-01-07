@@ -10,6 +10,7 @@ from app.context import set_context_var
 from app.log import get_log
 from uuid import uuid4
 from starlette.concurrency import iterate_in_threadpool
+from fastapi.staticfiles import StaticFiles
 
 
 @asynccontextmanager
@@ -19,34 +20,28 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(lifespan=lifespan, root_path="/api/v1")
-app.include_router(user_routers.router)
+app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=lifespan, root_path="/api/v1", openapi_url="/api/v1/openapi.json")
+app.include_router(user_routers.router, prefix="/api/v1")
+app.mount("/mfa", StaticFiles(directory="/memo/data/mfa", html=False), name="/memo/data/mfa")
 log = get_log()
 
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
-    # Do not spend resources if debug is disabled.
-    if log.level <= log.root.level:
-        set_context_var("uuid", str(uuid4()))
-        start_time = time()
-        log.debug("Request received, method=%s, url=%s, headers=%s" % (
-            request.method, request.url, str(request.headers.raw)))
+    set_context_var("uuid", str(uuid4()))
+    start_time = time()
+
+    log.debug("Request received, method=%s, url=%s, headers=%s" % (
+        request.method, request.url, str(request.headers.raw)))
 
     response = await call_next(request)
 
-    # Do not spend resources if debug is disabled
-    if log.level <= log.root.level:
-        elapsed_time = time() - start_time
-        response.headers["X-Process-Time"] = str(elapsed_time)
+    elapsed_time = time() - start_time
+    response.headers["X-Process-Time"] = str(elapsed_time)
 
-        # Save the data to a list and use iterate_in_threadpool to initiate the iterator again for response.
-        # https://stackoverflow.com/questions/71882419/fastapi-how-to-get-the-response-body-in-middleware
-        response_body = [chunk async for chunk in response.body_iterator]
-        response.body_iterator = iterate_in_threadpool(iter(response_body))
-
-        log.debug("Response sent, elapsed time=%s, status_code=%s, headers=%s, response_body=%s" % (
-            elapsed_time, response.status_code, str(response.headers.raw), response_body[0].decode()))
+    log.debug("Response sent, elapsed time=%s, status_code=%s, headers=%s" % (
+        elapsed_time, response.status_code, str(response.headers.raw)))
 
     return response
 
