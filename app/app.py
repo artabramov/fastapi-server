@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(lifespan=lifespan, root_path="/memo")
+app = FastAPI(lifespan=lifespan, root_path="/api/v1")
 app.include_router(user_routers.router)
 log = get_log()
 
