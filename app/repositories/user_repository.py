@@ -1,5 +1,4 @@
-from app.models.user import User
-from app.models.user_meta import UserMeta
+from app.models.user_models import User, UserMeta
 from app.schemas.user_schema import UserRegister, UserSelect, UsersList
 from app.managers.entity_manager import EntityManager
 from app.errors.value_exists import ValueExists

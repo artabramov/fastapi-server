@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from fastapi import Query
 from typing import Optional, List, Dict, Literal
-from app.models.user import UserRole
+from app.models.user_models import UserRole
 
 
 class UserRegister(BaseModel):

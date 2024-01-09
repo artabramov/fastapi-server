@@ -17,11 +17,11 @@ router = APIRouter()
 
 @router.post('/user', tags=['users'])
 async def user_register(session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
-                        user_schema: UserRegister = Depends()):
+                        schema: UserRegister = Depends()):
     """Register a new user."""
     repository_helper = RepositoryHelper(session, cache)
-    user_repository = await repository_helper.get_repository(user_schema)
-    user = await user_repository.register(user_schema)
+    user_repository = await repository_helper.get_repository(schema)
+    user = await user_repository.register(schema)
     return {
         "user_id": user.id,
         "mfa_key": await user.getattr("mfa_key"),
@@ -31,11 +31,11 @@ async def user_register(session: Session = Depends(get_session), cache: Redis = 
 
 @router.get('/user/{id}', tags=['users'])
 async def user_select(session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
-                      user_schema: UserSelect = Depends()):
+                      schema: UserSelect = Depends()):
     """Select a user."""
     repository_helper = RepositoryHelper(session, cache)
-    user_repository = await repository_helper.get_repository(user_schema)
-    user = await user_repository.select(user_schema)
+    user_repository = await repository_helper.get_repository(schema)
+    user = await user_repository.select(schema)
     return {
         "user": await user.to_dict(),
     }
@@ -43,12 +43,12 @@ async def user_select(session: Session = Depends(get_session), cache: Redis = De
 
 @router.get('/users', tags=['users'])
 async def users_list(session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
-                     user_schema: UsersList = Depends()):
+                     schema: UsersList = Depends()):
     """Select a user."""
     repository_helper = RepositoryHelper(session, cache)
-    user_repository = await repository_helper.get_repository(user_schema)
-    users = await user_repository.select_all(user_schema)
-    count = await user_repository.count_all(user_schema)
+    user_repository = await repository_helper.get_repository(schema)
+    users = await user_repository.select_all(schema)
+    count = await user_repository.count_all(schema)
     return {
         "users": [await user.to_dict() for user in users],
         "count": count,
