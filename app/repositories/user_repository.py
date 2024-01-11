@@ -1,7 +1,7 @@
-from app.models.user_models import User, UserMeta, UserRole, USER_PASS_ATTEMPTS_LIMIT, USER_PASS_SUSPENDED_TIME
-from app.schemas.user_schemas import UserRegister, UserLogin, UserSelect, UsersList
+from app.models.user_models import User, UserMeta, UserRole, USER_PASS_ATTEMPTS_LIMIT, USER_PASS_SUSPENDED_TIME, USER_MFA_ATTEMPTS_LIMIT
+from app.schemas.user_schemas import UserRegister, UserLogin, UserSignin, UserSelect, UsersList
 from app.managers.entity_manager import EntityManager
-from app.errors import E
+from app.error import E
 from app.helpers.mfa_helper import MFAHelper
 from app.helpers.jwt_helper import JWTHelper
 from app.dotenv import get_config
@@ -81,6 +81,37 @@ class UserRepository():
 
             await self.entity_manager.update(user, commit=True)
             raise E(("query", "user_pass"), "value_invalid")
+
+    async def signin(self, schema: UserSignin) -> str:
+        """Login, second step."""
+        users = await self.entity_manager.select_all(User, user_login__eq=schema.user_login)
+        user = users[0] if users else None
+
+        if not user:
+            raise E(("query", "user_login"), "value_not_found")
+
+        elif not user.pass_accepted:
+            raise E(("query", "user_totp"), "access_denied")
+
+        mfa_key = await user.getattr("mfa_key")
+        if schema.user_totp == await MFAHelper.get_mfa_totp(mfa_key):
+            await MFAHelper.delete_mfa_image(mfa_key)
+            user.mfa_attempts = 0
+            user.pass_accepted = False
+            await self.entity_manager.update(user, commit=True)
+            
+            jti = await user.getattr("jti")
+            user_token = await jwt_helper.encode_token(user.id, user.user_role.name, user.user_login, jti, schema.exp)
+            return user_token
+
+        else:
+            user.mfa_attempts = user.mfa_attempts + 1
+            if user.mfa_attempts >= USER_MFA_ATTEMPTS_LIMIT:
+                user.mfa_attempts = 0
+                user.pass_accepted = False
+
+            await self.entity_manager.update(user, commit=True)
+            raise E(("query", "user_totp"), "value_invalid")
 
 
     async def select(self, user_schema: UserSelect):

@@ -19,6 +19,12 @@ class UserLogin(BaseModel):
     user_pass: str
 
 
+class UserSignin(BaseModel):
+    user_login: str
+    user_totp: str
+    exp: Optional[int] = None
+
+
 class UserSelect(BaseModel):
     id: int
 

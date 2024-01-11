@@ -51,6 +51,10 @@ class EntityManager:
             str(cls.__name__), obj_id, str(obj.__dict__) if obj else None))
 
         return obj
+    
+    async def select_by(self, cls: object, **kwargs) -> object:
+        objs = await self.select_all(cls, **kwargs)
+        return objs[0] if objs else None
 
     async def update(self, obj: object, commit: bool = False) -> None:
         """Update SQLAlchemy object in Postgres database."""

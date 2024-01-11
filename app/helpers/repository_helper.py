@@ -2,7 +2,7 @@ from app.managers.entity_manager import EntityManager
 from app.managers.cache_manager import CacheManager
 from sqlalchemy.orm import Session
 from redis import Redis
-from app.schemas.user_schemas import UserRegister, UserLogin, UserSelect, UsersList
+from app.schemas.user_schemas import UserRegister, UserLogin, UserSignin, UserSelect, UsersList
 from app.repositories.user_repository import UserRepository
 from app.models.user_models import User
 
@@ -18,5 +18,5 @@ class RepositoryHelper:
 
     async def get_repository(self, schema) -> object:
         """Return repository for schema."""
-        if schema.__class__ in [UserRegister, UserLogin, UserSelect, UsersList]:
+        if schema.__class__ in [UserRegister, UserLogin, UserSignin, UserSelect, UsersList]:
             return UserRepository(self.entity_manager, self.cache_manager)

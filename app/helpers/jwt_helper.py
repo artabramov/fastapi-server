@@ -21,7 +21,7 @@ class JWTHelper():
         """Generate JWT identifier."""
         return ''.join(random.choices(string.ascii_letters + string.digits, k=self.jti_length))
 
-    async def encode(self, user_id: int, user_role: str, user_login: str, jti: str, exp=None) -> str:
+    async def encode_token(self, user_id: int, user_role: str, user_login: str, jti: str, exp=None) -> str:
         """Encode user data into JWT token."""
         payload = {
             'user_id': user_id,
@@ -35,7 +35,7 @@ class JWTHelper():
 
         return jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)
 
-    async def decode(self, jwt_token: str) -> dict:
+    async def decode_token(self, jwt_token: str) -> dict:
         """Decode user data from JWT token."""
         payload = jwt.decode(jwt_token, self.jwt_secret, algorithms=self.jwt_algorithm)
         res = {
