@@ -6,11 +6,12 @@ class E(RequestValidationError):
     access_denied = "Access denied."
     attempts_suspended = "Attempts are temporarily suspended"
 
-    # bearer token errors
-    token_empty = "Bearer token is empty"
-    token_invalid = "Bearer token is invalid"
-    token_expired = "Bearer token has expired"
-    token_rejected = "Bearer token rejected"
+    # JWT token errors
+    token_empty = "The token is empty"
+    token_invalid = "The token is invalid"
+    token_expired = "The token has expired"
+    token_rejected = "The token contains an invalid JTI or user identifier"
+    token_denied = "The token does not have enough permissions"
 
     # value errors
     value_not_found = "The value not found"

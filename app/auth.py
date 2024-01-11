@@ -16,12 +16,12 @@ jwt_helper = JWTHelper(config.JWT_SECRET, config.JWT_ALGORITHM)
 jwt_schema = HTTPBearer()
 
 
-async def get_current_user(bearer: Annotated[str, Depends(jwt_schema)]):
-    if not bearer.credentials:
+async def _auth(user_token):
+    if not user_token.credentials:
         raise E(BEARER_ERROR_LOC, "token_empty")
     
     try:
-        token_payload = await jwt_helper.decode_token(bearer.credentials)
+        token_payload = await jwt_helper.decode_token(user_token.credentials)
 
     except ExpiredSignatureError:
         raise E(BEARER_ERROR_LOC, "token_expired")
@@ -43,5 +43,33 @@ async def get_current_user(bearer: Annotated[str, Depends(jwt_schema)]):
     return user
 
 
-def check_permissions(user, user_role):
-    pass
+async def auth_admin(user_token: Annotated[str, Depends(jwt_schema)]):
+    user = await _auth(user_token)
+    if not user.can_admin:
+        raise E(BEARER_ERROR_LOC, "token_denied")
+
+    return user
+
+
+async def auth_editor(user_token: Annotated[str, Depends(jwt_schema)]):
+    user = await _auth(user_token)
+    if not user.can_edit:
+        raise E(BEARER_ERROR_LOC, "token_denied")
+
+    return user
+
+
+async def auth_writer(user_token: Annotated[str, Depends(jwt_schema)]):
+    user = await _auth(user_token)
+    if not user.can_write:
+        raise E(BEARER_ERROR_LOC, "token_denied")
+
+    return user
+
+
+async def auth_reader(user_token: Annotated[str, Depends(jwt_schema)]):
+    user = await _auth(user_token)
+    if not user.can_read:
+        raise E(BEARER_ERROR_LOC, "token_denied")
+
+    return user

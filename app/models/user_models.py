@@ -83,7 +83,7 @@ class User(Base, MetaMixin):
         self.mfa_attempts = 0
 
     async def setattr(self, key: str, value: str) -> None:
-        """Set encrypted/hashed attribute."""
+        """Set encrypted attribute."""
         if key in self._encrypted_attrs:
             setattr(self, key + "_encrypted", await fernet_helper.encrypt_value(value))
 
@@ -100,6 +100,26 @@ class User(Base, MetaMixin):
     @property
     def mfa_image(self) -> str:
         return config.BASE_URL + MFA_IMAGE_RELATIVE_URL + self.getattr("mfa_key") + "." + MFA_IMAGE_EXTENSION
+
+    @property
+    def can_admin(self) -> bool:
+        """Does the user have admin permissions?"""
+        return self.user_role == UserRole.admin
+
+    @property
+    def can_edit(self) -> bool:
+        """Does the user have editor permissions?"""
+        return self.user_role in [UserRole.admin, UserRole.editor]
+
+    @property
+    def can_write(self) -> bool:
+        """Does the user have writer permissions?"""
+        return self.user_role in [UserRole.admin, UserRole.editor, UserRole.writer]
+
+    @property
+    def can_read(self) -> bool:
+        """Does the user have reader permissions?"""
+        return self.user_role in [UserRole.admin, UserRole.editor, UserRole.writer, UserRole.reader]
 
     async def to_dict(self):
         return {
