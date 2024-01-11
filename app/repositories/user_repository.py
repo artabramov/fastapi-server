@@ -1,15 +1,18 @@
-from app.models.user_models import User, UserMeta
-from app.schemas.user_schema import UserRegister, UserSelect, UsersList
+from app.models.user_models import User, UserMeta, UserRole, USER_PASS_ATTEMPTS_LIMIT, USER_PASS_SUSPENDED_TIME
+from app.schemas.user_schemas import UserRegister, UserLogin, UserSelect, UsersList
 from app.managers.entity_manager import EntityManager
-from app.errors.value_exists import ValueExists
+from app.errors import E
 from app.helpers.mfa_helper import MFAHelper
 from app.helpers.jwt_helper import JWTHelper
 from app.dotenv import get_config
 from fastapi import HTTPException
 from app.helpers.meta_helper import MetaHelper
+from app.helpers.hash_helper import HashHelper
+import time
 
 config = get_config()
 jwt_helper = JWTHelper(config.JWT_SECRET, config.JWT_ALGORITHM)
+hash_helper = HashHelper(config.HASH_SALT)
 
 
 class UserRepository():
@@ -22,16 +25,17 @@ class UserRepository():
     async def register(self, user_schema: UserRegister):
         """Register a new user."""
         if await self.entity_manager.exists(User, user_login__eq=user_schema.user_login):
-            raise ValueExists(loc=("query", "user_login"), input=user_schema.user_login)
+            raise E(("query", "user_login"), "value_exists")
 
         try:
             jti = await jwt_helper.generate_jti()
             mfa_key = await MFAHelper.generate_mfa_key()
             await MFAHelper.create_mfa_image(user_schema.user_login, mfa_key)
 
-            user = User(user_schema.user_login, user_schema.first_name, user_schema.last_name)
+            pass_hash = await hash_helper.hash(user_schema.user_pass)
+            user = User(user_schema.user_login, pass_hash, user_schema.first_name, user_schema.last_name)
+
             await user.setattr("jti", jti)
-            await user.setattr("user_pass", user_schema.user_pass)
             await user.setattr("mfa_key", mfa_key)
             await self.entity_manager.insert(user)
 
@@ -46,6 +50,38 @@ class UserRepository():
             raise e
 
         return user
+
+    async def login(self, schema: UserLogin):
+        """Login, first step."""
+        users = await self.entity_manager.select_all(User, user_login__eq=schema.user_login)
+        user = users[0] if users else None
+
+        if not user:
+            raise E(("query", "user_login"), "value_not_found")
+
+        elif user.user_role.name == UserRole.none.name:
+            raise E(("query", "user_login"), "access_denied")
+
+        elif user.suspended_date >= time.time():
+            raise E(("query", "user_pass"), "attempts_suspended")
+
+        elif user.pass_hash == await hash_helper.hash(schema.user_pass):
+            user.suspended_date = 0
+            user.pass_attempts = 0
+            user.pass_accepted = True
+            await self.entity_manager.update(user, commit=True)
+
+        else:
+            user.suspended_date = 0
+            user.pass_attempts = user.pass_attempts + 1
+            user.pass_accepted = False
+            if user.pass_attempts >= USER_PASS_ATTEMPTS_LIMIT:
+                user.suspended_date = int(time.time()) + USER_PASS_SUSPENDED_TIME
+                user.pass_attempts = 0
+
+            await self.entity_manager.update(user, commit=True)
+            raise E(("query", "user_pass"), "value_invalid")
+
 
     async def select(self, user_schema: UserSelect):
         """Select user."""

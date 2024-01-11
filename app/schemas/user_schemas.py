@@ -14,6 +14,11 @@ class UserRegister(BaseModel):
     user_contacts: Optional[str] = None
 
 
+class UserLogin(BaseModel):
+    user_login: str
+    user_pass: str
+
+
 class UserSelect(BaseModel):
     id: int
 

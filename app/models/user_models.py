@@ -12,6 +12,10 @@ from app.helpers.hash_helper import HashHelper
 from app.dotenv import get_config
 from app.helpers.mfa_helper import MFA_IMAGE_RELATIVE_URL, MFA_IMAGE_EXTENSION
 
+USER_PASS_ATTEMPTS_LIMIT = 10
+USER_PASS_SUSPENDED_TIME = 30
+USER_MFA_ATTEMPTS_LIMIT = 10
+
 config = get_config()
 fernet_helper = FernetHelper(config.FERNET_ENCRYPTION_KEY)
 hash_helper = HashHelper(config.HASH_SALT)
@@ -66,11 +70,12 @@ class User(Base, MetaMixin):
 
     meta = relationship("UserMeta", back_populates="user", lazy="joined")
 
-    def __init__(self, user_login: str, first_name: str, last_name: str):
+    def __init__(self, user_login: str, pass_hash: str, first_name: str, last_name: str):
         """Init User SQLAlchemy object."""
         self.suspended_date = 0
         self.user_role = UserRole.none
         self.user_login = user_login
+        self.pass_hash = pass_hash
         self.first_name = first_name
         self.last_name = last_name
         self.pass_attempts = 0
@@ -81,9 +86,6 @@ class User(Base, MetaMixin):
         """Set encrypted/hashed attribute."""
         if key in self._encrypted_attrs:
             setattr(self, key + "_encrypted", await fernet_helper.encrypt_value(value))
-        
-        elif key == "user_pass":
-            self.pass_hash = await hash_helper.hash(value)
 
     async def getattr(self, key: str):
         """Get decrypted attribute."""

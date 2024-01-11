@@ -1,7 +1,7 @@
 """User routes."""
 
 from fastapi import APIRouter, Depends
-from app.schemas.user_schema import UserRegister, UserSelect, UsersList
+from app.schemas.user_schemas import UserRegister, UserLogin, UserSelect, UsersList
 from sqlalchemy.orm import Session
 from app.session import get_session
 from app.cache import get_cache
@@ -27,6 +27,16 @@ async def user_register(session: Session = Depends(get_session), cache: Redis = 
         "mfa_key": await user.getattr("mfa_key"),
         'mfa_image': config.BASE_URL + MFA_IMAGE_RELATIVE_URL + await user.getattr("mfa_key") + "." + MFA_IMAGE_EXTENSION,
     }
+
+
+@router.get('/user/login', tags=['users'])
+async def user_login(session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
+                     schema: UserLogin = Depends()):
+    """Register a new user."""
+    repository_helper = RepositoryHelper(session, cache)
+    user_repository = await repository_helper.get_repository(schema)
+    user = await user_repository.login(schema)
+    return {}
 
 
 @router.get('/user/{id}', tags=['users'])

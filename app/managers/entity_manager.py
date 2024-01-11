@@ -61,7 +61,7 @@ class EntityManager:
             str(obj.__class__.__name__), str(obj.__dict__)))
 
         if commit:
-            self.commit()
+            await self.commit()
 
     async def delete(self, obj: object, commit: bool = False) -> None:
         """Delete SQLAlchemy object from Postgres database."""
@@ -71,7 +71,7 @@ class EntityManager:
             str(obj.__class__.__name__), str(obj.__dict__)))
 
         if commit:
-            self.commit()
+            await self.commit()
 
     async def select_all(self, cls: object, **kwargs) -> list:
         """Select a bunch of SQLAlchemy objects from Postgres database."""
@@ -166,8 +166,8 @@ class EntityManager:
 
     def _order_by(self, **kwargs):
         """Make "ORDER BY" statement."""
-        order_by = text(kwargs.get(_ORDER_BY))
-        return asc(order_by) if kwargs[_ORDER] == _ASC else desc(order_by)
+        order_by = text(kwargs.get(_ORDER_BY, "id"))
+        return asc(order_by) if kwargs.get(_ORDER, _ASC) == _ASC else desc(order_by)
 
     def _offset(self, **kwargs):
         """Make "OFFSET" statement."""
@@ -175,4 +175,4 @@ class EntityManager:
 
     def _limit(self, **kwargs):
         """Make "LIMIT" statement."""
-        return kwargs.get(_LIMIT, 0)
+        return kwargs.get(_LIMIT, 1)
