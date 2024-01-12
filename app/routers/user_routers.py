@@ -63,7 +63,7 @@ async def user_register(session: Session = Depends(get_session), cache: Redis = 
 
 
 @router.get('/user/{user_id}', tags=['users'])
-async def user_select(user_id: int,  session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
+async def user_select(user_id: int, session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
                       current_user = Depends(auth_reader)):
     """Select a user."""
     repository_helper = RepositoryHelper(session, cache)
@@ -82,6 +82,13 @@ async def user_update(session: Session = Depends(get_session), cache: Redis = De
     user_repository = await repository_helper.get_repository(User.__tablename__)
     await user_repository.update(current_user, schema.first_name, schema.last_name, user_summary=schema.user_summary,
                                  user_contacts=schema.user_contacts)
+    return {}
+
+
+@router.delete('/user/{user_id}', tags=['users'])
+async def user_delete(user_id: int, session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
+                      current_user = Depends(auth_admin)):
+    """Delete user."""
     return {}
 
 
