@@ -1,13 +1,14 @@
 from app.models.user_models import User, UserMeta, UserRole, USER_PASS_ATTEMPTS_LIMIT, USER_PASS_SUSPENDED_TIME, USER_MFA_ATTEMPTS_LIMIT
-from app.schemas.user_schemas import UserRegister, UserLogin, UserSignin, UserSelect, UsersList
+from app.schemas.user_schemas import UserRegister, UserLogin, UserToken, UsersList
 from app.managers.entity_manager import EntityManager
-from app.error import E
+from app.errors import E
 from app.helpers.mfa_helper import MFAHelper
 from app.helpers.jwt_helper import JWTHelper
 from app.dotenv import get_config
 from fastapi import HTTPException
 from app.helpers.meta_helper import MetaHelper
 from app.helpers.hash_helper import HashHelper
+from fastapi.exceptions import RequestValidationError
 import time
 
 config = get_config()
@@ -15,31 +16,32 @@ jwt_helper = JWTHelper(config.JWT_SECRET, config.JWT_ALGORITHM)
 hash_helper = HashHelper(config.HASH_SALT)
 
 
-class UserRepository():
+class UserRepository:
 
     def __init__(self, entity_manager: EntityManager, cache_manager) -> None:
         """Init User Repository."""
         self.entity_manager = entity_manager
         self.cache_manager = cache_manager
 
-    async def register(self, user_schema: UserRegister):
+    async def register(self, user_login: str, user_pass: str, first_name: str, last_name: str) -> User:
         """Register a new user."""
-        if await self.entity_manager.exists(User, user_login__eq=user_schema.user_login):
-            raise E(("query", "user_login"), "value_exists")
+        if await self.entity_manager.exists(User, user_login__eq=user_login):
+            raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
+                                          "type": "value_exists", "msg": E.value_exists})
 
         try:
             jti = await jwt_helper.generate_jti()
             mfa_key = await MFAHelper.generate_mfa_key()
-            await MFAHelper.create_mfa_image(user_schema.user_login, mfa_key)
+            await MFAHelper.create_mfa_image(user_login, mfa_key)
 
-            pass_hash = await hash_helper.hash(user_schema.user_pass)
-            user = User(user_schema.user_login, pass_hash, user_schema.first_name, user_schema.last_name)
+            pass_hash = await hash_helper.hash(user_pass)
+            user = User(user_login, pass_hash, first_name, last_name)
 
             await user.setattr("jti", jti)
             await user.setattr("mfa_key", mfa_key)
             await self.entity_manager.insert(user)
 
-            await MetaHelper.set(self.entity_manager, User, user.id, user_schema, UserMeta)
+            # await MetaHelper.set(self.entity_manager, User, user.id, user_schema, UserMeta)
 
             await self.entity_manager.commit()
             await self.cache_manager.set(user)
@@ -51,21 +53,24 @@ class UserRepository():
 
         return user
 
-    async def login(self, schema: UserLogin):
+    async def login(self, user_login: str, user_pass: str):
         """Login, first step."""
-        users = await self.entity_manager.select_all(User, user_login__eq=schema.user_login)
+        users = await self.entity_manager.select_all(User, user_login__eq=user_login)
         user = users[0] if users else None
 
         if not user:
-            raise E(("query", "user_login"), "value_not_found")
+            raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
+                                          "type": "login_invalid", "msg": E.login_invalid})
 
         elif user.user_role.name == UserRole.none.name:
-            raise E(("query", "user_login"), "access_denied")
+            raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
+                                          "type": "login_denied", "msg": E.login_denied})
 
         elif user.suspended_date >= time.time():
-            raise E(("query", "user_pass"), "attempts_suspended")
+            raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
+                                          "type": "login_suspended", "msg": E.login_suspended})
 
-        elif user.pass_hash == await hash_helper.hash(schema.user_pass):
+        elif user.pass_hash == await hash_helper.hash(user_pass):
             user.suspended_date = 0
             user.pass_attempts = 0
             user.pass_accepted = True
@@ -82,26 +87,27 @@ class UserRepository():
             await self.entity_manager.update(user, commit=True)
             raise E(("query", "user_pass"), "value_invalid")
 
-    async def signin(self, schema: UserSignin) -> str:
+    async def token_select(self, user_login: str, user_totp: str, exp: int = None) -> str:
         """Login, second step."""
-        users = await self.entity_manager.select_all(User, user_login__eq=schema.user_login)
-        user = users[0] if users else None
+        user = await self.entity_manager.select_by(User, user_login__eq=user_login)
 
         if not user:
-            raise E(("query", "user_login"), "value_not_found")
+            raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
+                                          "type": "login_invalid", "msg": E.login_invalid})
 
         elif not user.pass_accepted:
-            raise E(("query", "user_totp"), "access_denied")
+            raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
+                                          "type": "login_denied", "msg": E.login_denied})
 
         mfa_key = await user.getattr("mfa_key")
-        if schema.user_totp == await MFAHelper.get_mfa_totp(mfa_key):
+        if user_totp == await MFAHelper.get_mfa_totp(mfa_key):
             await MFAHelper.delete_mfa_image(mfa_key)
             user.mfa_attempts = 0
             user.pass_accepted = False
             await self.entity_manager.update(user, commit=True)
             
             jti = await user.getattr("jti")
-            user_token = await jwt_helper.encode_token(user.id, user.user_role.name, user.user_login, jti, schema.exp)
+            user_token = await jwt_helper.encode_token(user.id, user.user_role.name, user.user_login, jti, exp)
             return user_token
 
         else:
@@ -111,19 +117,37 @@ class UserRepository():
                 user.pass_accepted = False
 
             await self.entity_manager.update(user, commit=True)
-            raise E(("query", "user_totp"), "value_invalid")
+            raise RequestValidationError({"loc": ["query", "user_totp"], "input": user_totp,
+                                          "type": "value_invalid", "msg": E.value_invalid})
+        
+    async def token_delete(self, user: User):
+        jti = await jwt_helper.generate_jti()
+        await user.setattr("jti", jti)
+        await self.entity_manager.update(user, commit=True)
+        await self.cache_manager.delete(User, user.id)
 
 
-    async def select(self, user_schema: UserSelect):
+    async def select(self, user_id: int) -> User:
         """Select user."""
-        user = await self.cache_manager.get(User, user_schema.id)
+        user = await self.cache_manager.get(User, user_id)
         if not user:
-            user = await self.entity_manager.select(User, user_schema.id)
+            user = await self.entity_manager.select(User, user_id)
 
         if not user:
             raise HTTPException(status_code=404)
 
         return user
+
+    async def update(self, user: User, first_name: str, last_name: str, user_summary: str = None, user_contacts: str = None):
+        """Update an user."""
+        user.first_name = first_name
+        user.last_name = last_name
+        await self.entity_manager.update(user, commit=True)
+
+        # for meta_key in
+
+        await self.cache_manager.set(user)
+
 
     async def select_all(self, schema):
         kwargs = {key[0]: key[1] for key in schema if key[1]}

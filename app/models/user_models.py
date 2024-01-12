@@ -128,6 +128,10 @@ class User(Base, MetaMixin):
             "updated_date": self.updated_date,
             "user_role": self.user_role.name,
             "user_login": self.user_login,
-            "user_summary": await self.getmeta("user_summary"),
-            "user_contacts": await self.getmeta("user_contacts"),
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "meta": {
+                "user_summary": await self.getmeta("user_summary"),
+                "user_contacts": await self.getmeta("user_contacts"),
+            }
         }

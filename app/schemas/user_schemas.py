@@ -19,14 +19,18 @@ class UserLogin(BaseModel):
     user_pass: str
 
 
-class UserSignin(BaseModel):
+class UserToken(BaseModel):
     user_login: str
     user_totp: str
     exp: Optional[int] = None
 
 
-class UserSelect(BaseModel):
-    id: int
+class UserUpdate(BaseModel):
+    first_name: str = Field(Query(..., min_length=2, max_length=40))
+    last_name: str = Field(Query(..., min_length=2, max_length=40))
+    # meta
+    user_summary: Optional[str] = None
+    user_contacts: Optional[str] = None
 
 
 class UsersList(BaseModel):
