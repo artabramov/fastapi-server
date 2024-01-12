@@ -27,15 +27,15 @@ class UserMeta(Base):
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))
     updated_date = Column(Integer, nullable=False, index=True, default=0, onupdate=lambda: int(time()))
-    user_id = Column(BigInteger, ForeignKey("users.id"))
+    parent_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     meta_key = Column(String(40), nullable=False, index=True)
     meta_value = Column(String(512), nullable=False)
 
     user = relationship("User", back_populates="meta")
 
-    def __init__(self, user_id: int, meta_key: str, meta_value: str) -> None:
+    def __init__(self, parent_id: int, meta_key: str, meta_value: str) -> None:
         """Init user model."""
-        self.user_id = user_id
+        self.parent_id = parent_id
         self.meta_key = meta_key
         self.meta_value = meta_value
 
@@ -50,7 +50,6 @@ class UserRole(enum.Enum):
 
 class User(Base, MetaMixin):
     __tablename__ = "users"
-    _meta_attrs = ["userpic", "user_summary", "user_contacts"]
     _encrypted_attrs = ["mfa_key", "jti"]
 
     id = Column(BigInteger, primary_key=True, index=True)

@@ -80,7 +80,8 @@ async def user_update(session: Session = Depends(get_session), cache: Redis = De
     """Update current user."""
     repository_helper = RepositoryHelper(session, cache)
     user_repository = await repository_helper.get_repository(User.__tablename__)
-    await user_repository.update(current_user, schema.first_name, schema.last_name)
+    await user_repository.update(current_user, schema.first_name, schema.last_name, user_summary=schema.user_summary,
+                                 user_contacts=schema.user_contacts)
     return {}
 
 

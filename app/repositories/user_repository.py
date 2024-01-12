@@ -1,14 +1,13 @@
 from app.models.user_models import User, UserMeta, UserRole, USER_PASS_ATTEMPTS_LIMIT, USER_PASS_SUSPENDED_TIME, USER_MFA_ATTEMPTS_LIMIT
-from app.schemas.user_schemas import UserRegister, UserLogin, UserToken, UsersList
 from app.managers.entity_manager import EntityManager
 from app.errors import E
 from app.helpers.mfa_helper import MFAHelper
 from app.helpers.jwt_helper import JWTHelper
 from app.dotenv import get_config
 from fastapi import HTTPException
-from app.helpers.meta_helper import MetaHelper
 from app.helpers.hash_helper import HashHelper
 from fastapi.exceptions import RequestValidationError
+from app.repositories.meta_repository import MetaRepository
 import time
 
 config = get_config()
@@ -39,12 +38,7 @@ class UserRepository:
 
             await user.setattr("jti", jti)
             await user.setattr("mfa_key", mfa_key)
-            await self.entity_manager.insert(user)
-
-            # await MetaHelper.set(self.entity_manager, User, user.id, user_schema, UserMeta)
-
-            await self.entity_manager.commit()
-            await self.cache_manager.set(user)
+            await self.entity_manager.insert(user, commit=True)
 
         except Exception as e:
             await MFAHelper.delete_mfa_image(mfa_key)
@@ -55,12 +49,11 @@ class UserRepository:
 
     async def login(self, user_login: str, user_pass: str):
         """Login, first step."""
-        users = await self.entity_manager.select_all(User, user_login__eq=user_login)
-        user = users[0] if users else None
+        user = await self.entity_manager.select_by(User, user_login__eq=user_login)
 
         if not user:
             raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
-                                          "type": "login_invalid", "msg": E.login_invalid})
+                                          "type": "value_invalid", "msg": E.value_invalid})
 
         elif user.user_role.name == UserRole.none.name:
             raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
@@ -75,6 +68,7 @@ class UserRepository:
             user.pass_attempts = 0
             user.pass_accepted = True
             await self.entity_manager.update(user, commit=True)
+            await self.cache_manager.delete(user)
 
         else:
             user.suspended_date = 0
@@ -85,7 +79,10 @@ class UserRepository:
                 user.pass_attempts = 0
 
             await self.entity_manager.update(user, commit=True)
-            raise E(("query", "user_pass"), "value_invalid")
+            await self.cache_manager.delete(user)
+
+            raise RequestValidationError({"loc": ["query", "user_pass"], "input": user_pass,
+                                          "type": "value_invalid", "msg": E.value_invalid})
 
     async def token_select(self, user_login: str, user_totp: str, exp: int = None) -> str:
         """Login, second step."""
@@ -105,6 +102,7 @@ class UserRepository:
             user.mfa_attempts = 0
             user.pass_accepted = False
             await self.entity_manager.update(user, commit=True)
+            await self.cache_manager.delete(user)
             
             jti = await user.getattr("jti")
             user_token = await jwt_helper.encode_token(user.id, user.user_role.name, user.user_login, jti, exp)
@@ -117,6 +115,8 @@ class UserRepository:
                 user.pass_accepted = False
 
             await self.entity_manager.update(user, commit=True)
+            await self.cache_manager.delete(user)
+
             raise RequestValidationError({"loc": ["query", "user_totp"], "input": user_totp,
                                           "type": "value_invalid", "msg": E.value_invalid})
         
@@ -124,8 +124,7 @@ class UserRepository:
         jti = await jwt_helper.generate_jti()
         await user.setattr("jti", jti)
         await self.entity_manager.update(user, commit=True)
-        await self.cache_manager.delete(User, user.id)
-
+        await self.cache_manager.delete(user)
 
     async def select(self, user_id: int) -> User:
         """Select user."""
@@ -136,18 +135,20 @@ class UserRepository:
         if not user:
             raise HTTPException(status_code=404)
 
+        await self.cache_manager.set(user)
         return user
 
     async def update(self, user: User, first_name: str, last_name: str, user_summary: str = None, user_contacts: str = None):
         """Update an user."""
         user.first_name = first_name
         user.last_name = last_name
-        await self.entity_manager.update(user, commit=True)
+        await self.entity_manager.update(user)
 
-        # for meta_key in
+        meta_repository = MetaRepository(self.entity_manager)
+        await meta_repository.set(UserMeta, user.id, "user_summary", user_summary)
 
-        await self.cache_manager.set(user)
-
+        await self.entity_manager.commit()
+        await self.cache_manager.delete(user)
 
     async def select_all(self, schema):
         kwargs = {key[0]: key[1] for key in schema if key[1]}

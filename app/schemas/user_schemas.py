@@ -9,9 +9,6 @@ class UserRegister(BaseModel):
     user_pass: str
     first_name: str = Field(Query(..., min_length=2, max_length=40))
     last_name: str
-    # meta
-    user_summary: Optional[str] = None
-    user_contacts: Optional[str] = None
 
 
 class UserLogin(BaseModel):

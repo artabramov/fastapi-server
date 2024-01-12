@@ -81,7 +81,7 @@ class EntityManager:
         """Select a bunch of SQLAlchemy objects from Postgres database."""
         objs = self.session.query(cls) \
             .filter(*self._where(cls, **kwargs)) \
-            .order_by(self._order_by(**kwargs)) \
+            .order_by(self._order_by(cls, **kwargs)) \
             .offset(self._offset(**kwargs)) \
             .limit(self._limit(**kwargs)) \
             .all()
@@ -168,9 +168,9 @@ class EntityManager:
                 where.append(operation)
         return where
 
-    def _order_by(self, **kwargs):
+    def _order_by(self, cls, **kwargs):
         """Make "ORDER BY" statement."""
-        order_by = text(kwargs.get(_ORDER_BY, "id"))
+        order_by = getattr(cls, kwargs.get(_ORDER_BY, "id"))
         return asc(order_by) if kwargs.get(_ORDER, _ASC) == _ASC else desc(order_by)
 
     def _offset(self, **kwargs):

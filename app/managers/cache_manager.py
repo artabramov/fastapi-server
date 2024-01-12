@@ -34,10 +34,10 @@ class CacheManager:
 
         return obj
 
-    async def delete(self, cls: object, obj_id: int):
+    async def delete(self, obj: object):
         """Delete SQLAlchemy object from Redis cache."""
-        self.cache.delete('%s:%s' % (cls.__tablename__, obj_id))
+        self.cache.delete('%s:%s' % (obj.__tablename__, obj.id))
 
         log.debug("Delete SQLAlchemy object from Redis cache, cls=%s, obj_id=%s" % (
-            str(cls.__name__), obj_id
+            str(obj.__class__.__name__), str(obj.__dict__)
         ))
