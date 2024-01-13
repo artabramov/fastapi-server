@@ -36,6 +36,11 @@ class UserRepository:
             pass_hash = await hash_helper.hash(user_pass)
             user = User(user_login, pass_hash, first_name, last_name)
 
+            # set admin role for first registered user
+            users_count = await self.entity_manager.count_all(User)
+            if not users_count:
+                user.user_role = UserRole.admin
+
             await user.setattr("jti", jti)
             await user.setattr("mfa_key", mfa_key)
             await self.entity_manager.insert(user, commit=True)
@@ -139,15 +144,32 @@ class UserRepository:
         return user
 
     async def update(self, user: User, first_name: str, last_name: str, user_summary: str = None, user_contacts: str = None):
-        """Update an user."""
+        """Update user."""
         user.first_name = first_name
         user.last_name = last_name
         await self.entity_manager.update(user)
 
         meta_repository = MetaRepository(self.entity_manager)
         await meta_repository.set(UserMeta, user.id, "user_summary", user_summary)
+        await meta_repository.set(UserMeta, user.id, "user_contacts", user_contacts)
 
         await self.entity_manager.commit()
+        await self.cache_manager.delete(user)
+
+    async def role_update(self, user: User, user_role: str):
+        """Update user role."""
+        user.user_role = user_role
+        await self.entity_manager.update(user, commit=True)
+        await self.cache_manager.delete(user)
+
+    async def delete(self, user: User):
+        """Delete user."""
+        try:
+            await self.entity_manager.delete(user, commit=True)
+        except Exception:
+            raise RequestValidationError({"loc": ["path", "user_id"], "input": user.id,
+                                         "type": "value_locked", "msg": E.value_locked})
+
         await self.cache_manager.delete(user)
 
     async def select_all(self, schema):

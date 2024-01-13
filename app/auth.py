@@ -40,7 +40,7 @@ async def _auth_user(user_token):
         session = next(get_session())
         entity_manager = EntityManager(session)
         user = await entity_manager.select_by(User, id__eq=jwt_payload["user_id"])
-    
+
     if not user:
         raise HTTPException(status_code=403, detail=E.jwt_rejected)
 

@@ -31,7 +31,7 @@ class UserMeta(Base):
     meta_key = Column(String(40), nullable=False, index=True)
     meta_value = Column(String(512), nullable=False)
 
-    user = relationship("User", back_populates="meta")
+    user = relationship("User", back_populates="user_meta")
 
     def __init__(self, parent_id: int, meta_key: str, meta_value: str) -> None:
         """Init user model."""
@@ -41,11 +41,11 @@ class UserMeta(Base):
 
 
 class UserRole(enum.Enum):
-    none = 0
-    reader = 1
-    writer = 2
-    editor = 3
-    admin = 4
+    none = "none"
+    reader = "reader"
+    writer = "writer"
+    editor = "editor"
+    admin = "admin"
 
 
 class User(Base, MetaMixin):
@@ -67,7 +67,7 @@ class User(Base, MetaMixin):
     mfa_attempts = Column(SmallInteger(), nullable=False, default=0)
     jti_encrypted = Column(String(512), nullable=False, unique=True)
 
-    meta = relationship("UserMeta", back_populates="user", lazy="joined")
+    user_meta = relationship("UserMeta", back_populates="user", lazy="joined", cascade="all,delete")
 
     def __init__(self, user_login: str, pass_hash: str, first_name: str, last_name: str):
         """Init User SQLAlchemy object."""
@@ -120,17 +120,9 @@ class User(Base, MetaMixin):
         """Does the user have reader permissions?"""
         return self.user_role in [UserRole.admin, UserRole.editor, UserRole.writer, UserRole.reader]
 
-    async def to_dict(self):
+    @property
+    def meta(self) -> dict:
         return {
-            "id": self.id,
-            "created_date": self.created_date,
-            "updated_date": self.updated_date,
-            "user_role": self.user_role.name,
-            "user_login": self.user_login,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "meta": {
-                "user_summary": await self.getmeta("user_summary"),
-                "user_contacts": await self.getmeta("user_contacts"),
-            }
+            "user_summary": self.getmeta("user_summary"),
+            "user_contacts": self.getmeta("user_contacts"),
         }

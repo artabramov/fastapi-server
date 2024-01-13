@@ -16,10 +16,14 @@ class UserLogin(BaseModel):
     user_pass: str
 
 
-class UserToken(BaseModel):
+class TokenSelect(BaseModel):
     user_login: str
     user_totp: str
     exp: Optional[int] = None
+
+
+class RoleUpdate(BaseModel):
+    user_role: UserRole
 
 
 class UserUpdate(BaseModel):
@@ -39,3 +43,19 @@ class UsersList(BaseModel):
     limit: int = Field(1, ge=1, le=168)
     order_by: Literal["id", "created_date", "updated_date", "user_login", "first_name", "last_name"] = "id"
     order: Literal["asc", "desc"] = "desc"
+
+
+
+class UserSelectRequest(BaseModel):
+    id: int
+
+
+class UserSelectResponse(BaseModel):
+    id: int
+    created_date: int
+    updated_date: int
+    user_role: UserRole
+    user_login: str
+    first_name: str
+    last_name: str
+    meta: dict
