@@ -81,12 +81,12 @@ class User(Base, MetaMixin):
         self.pass_accepted = False
         self.mfa_attempts = 0
 
-    async def setattr(self, key: str, value: str) -> None:
+    async def encrypt_attr(self, key: str, value: str) -> None:
         """Set encrypted attribute."""
         if key in self._encrypted_attrs:
             setattr(self, key + "_encrypted", await fernet_helper.encrypt_value(value))
 
-    async def getattr(self, key: str):
+    async def decrypt_attr(self, key: str):
         """Get decrypted attribute."""
         if key in self._encrypted_attrs:
             return await fernet_helper.decrypt_value(getattr(self, key + "_encrypted"))
@@ -95,10 +95,6 @@ class User(Base, MetaMixin):
     def full_name(self) -> str:
         """User full name."""
         return self.first_name + " " + self.last_name
-    
-    @property
-    def mfa_image(self) -> str:
-        return config.BASE_URL + MFA_IMAGE_RELATIVE_URL + self.getattr("mfa_key") + "." + MFA_IMAGE_EXTENSION
 
     @property
     def can_admin(self) -> bool:

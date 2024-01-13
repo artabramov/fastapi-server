@@ -41,8 +41,8 @@ class UserRepository:
             if not users_count:
                 user.user_role = UserRole.admin
 
-            await user.setattr("jti", jti)
-            await user.setattr("mfa_key", mfa_key)
+            await user.encrypt_attr("jti", jti)
+            await user.encrypt_attr("mfa_key", mfa_key)
             await self.entity_manager.insert(user, commit=True)
 
         except Exception as e:
@@ -101,7 +101,7 @@ class UserRepository:
             raise RequestValidationError({"loc": ["query", "user_login"], "input": user_login,
                                           "type": "login_denied", "msg": E.login_denied})
 
-        mfa_key = await user.getattr("mfa_key")
+        mfa_key = await user.decrypt_attr("mfa_key")
         if user_totp == await MFAHelper.get_mfa_totp(mfa_key):
             await MFAHelper.delete_mfa_image(mfa_key)
             user.mfa_attempts = 0
@@ -109,7 +109,7 @@ class UserRepository:
             await self.entity_manager.update(user, commit=True)
             await self.cache_manager.delete(user)
             
-            jti = await user.getattr("jti")
+            jti = await user.decrypt_attr("jti")
             user_token = await jwt_helper.encode_token(user.id, user.user_role.name, user.user_login, jti, exp)
             return user_token
 
@@ -124,10 +124,10 @@ class UserRepository:
 
             raise RequestValidationError({"loc": ["query", "user_totp"], "input": user_totp,
                                           "type": "value_invalid", "msg": E.value_invalid})
-        
+
     async def token_delete(self, user: User):
         jti = await jwt_helper.generate_jti()
-        await user.setattr("jti", jti)
+        await user.encrypt_attr("jti", jti)
         await self.entity_manager.update(user, commit=True)
         await self.cache_manager.delete(user)
 
@@ -172,8 +172,8 @@ class UserRepository:
 
         await self.cache_manager.delete(user)
 
-    async def select_all(self, schema):
-        kwargs = {key[0]: key[1] for key in schema if key[1]}
+    async def select_all(self, **kwargs):
+        # kwargs = {key[0]: key[1] for key in schema if key[1]}
 
         if "user_contacts__ilike" in kwargs:
             kwargs["id__in"] = await self.entity_manager.subquery(UserMeta, "user_id", meta_key__eq="user_contacts",
@@ -184,7 +184,7 @@ class UserRepository:
             await self.cache_manager.set(user)
         return users
 
-    async def count_all(self, schema):
-        kwargs = {key[0]: key[1] for key in schema if key[1]}
+    async def count_all(self, **kwargs):
+        # kwargs = {key[0]: key[1] for key in schema if key[1]}
         users_count = await self.entity_manager.count_all(User, **kwargs)
         return users_count

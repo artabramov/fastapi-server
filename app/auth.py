@@ -45,7 +45,7 @@ async def _auth_user(user_token):
         raise HTTPException(status_code=403, detail=E.jwt_rejected)
 
     await cache_manager.set(user)
-    jti = await user.getattr("jti")
+    jti = await user.decrypt_attr("jti")
 
     if jwt_payload["jti"] != jti:
         raise HTTPException(status_code=403, detail=E.jwt_rejected)
