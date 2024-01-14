@@ -1,14 +1,18 @@
 """User routes."""
 
 from fastapi import APIRouter, Depends
-from app.schemas.user_schemas import UserRegisterRequest, UserRegisterResponse, UserLoginRequest, UserLoginResponse, TokenSelectRequest, TokenSelectResponse, TokenDeleteResponse, UserUpdateRequest, UserUpdateResponse, UserDeleteRequest, UserDeleteResponse, RoleUpdateRequest, RoleUpdateResponse, UserSelectRequest, UserSelectResponse, UsersListRequest, UsersListResponse, UserpicUploadRequest, UserpicUploadResponse, UserpicDeleteRequest, UserpicDeleteResponse
+from app.schemas.user_schemas import (
+    UserRegisterRequest, UserRegisterResponse, UserLoginRequest, UserLoginResponse, TokenSelectRequest,
+    TokenSelectResponse, TokenDeleteResponse, UserUpdateRequest, UserUpdateResponse, UserDeleteRequest,
+    UserDeleteResponse, RoleUpdateRequest, RoleUpdateResponse, UserSelectRequest, UserSelectResponse, UsersListRequest,
+    UsersListResponse, UserpicUploadRequest, UserpicUploadResponse, UserpicDeleteRequest, UserpicDeleteResponse)
 from sqlalchemy.orm import Session
 from app.session import get_session
 from app.cache import get_cache
 from app.helpers.repository_helper import RepositoryHelper
 from redis import Redis
 from app.dotenv import get_config
-from app.auth import auth_admin, auth_editor, auth_writer, auth_reader
+from app.auth import auth_admin, auth_reader
 from app.models.user_models import User
 from fastapi.exceptions import RequestValidationError
 from app.errors import E

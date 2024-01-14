@@ -3,7 +3,6 @@
 import os
 from dotenv import load_dotenv
 from functools import lru_cache
-from typing import Optional
 
 DOTENV_FILE = "/memo/.env"
 
@@ -81,9 +80,6 @@ def get_config() -> Config:
 
         elif value.isdigit():
             config.__dict__[key] = int(os.environ.get(key))
-
-        # elif ";" in value:
-        #     config.__dict__[key] = os.environ.get(key).split(";")
 
         else:
             config.__dict__[key] = os.environ.get(key)

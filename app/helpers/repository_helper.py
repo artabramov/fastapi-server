@@ -1,3 +1,5 @@
+"""Repository helper."""
+
 from app.managers.entity_manager import EntityManager
 from app.managers.cache_manager import CacheManager
 from sqlalchemy.orm import Session

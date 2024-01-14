@@ -1,5 +1,6 @@
 """Meta mixin."""
 
+
 class MetaMixin:
     """Mixin for classes that contain meta data."""
 

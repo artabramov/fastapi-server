@@ -1,4 +1,7 @@
-from app.models.user_models import User, UserMeta, UserRole, USER_PASS_ATTEMPTS_LIMIT, USER_PASS_SUSPENDED_TIME, USER_MFA_ATTEMPTS_LIMIT
+"""User repository."""
+
+from app.models.user_models import User, UserMeta, UserRole
+from app.models.user_models import USER_PASS_ATTEMPTS_LIMIT, USER_PASS_SUSPENDED_TIME, USER_MFA_ATTEMPTS_LIMIT
 from app.managers.entity_manager import EntityManager
 from app.errors import E
 from app.helpers.mfa_helper import MFAHelper
@@ -18,6 +21,7 @@ hash_helper = HashHelper(config.HASH_SALT)
 
 
 class UserRepository:
+    """User repository."""
 
     def __init__(self, entity_manager: EntityManager, cache_manager) -> None:
         """Init User Repository."""
@@ -55,7 +59,7 @@ class UserRepository:
         return user
 
     async def login(self, user_login: str, user_pass: str):
-        """Login, first step."""
+        """User login."""
         user = await self.entity_manager.select_by(User, user_login__eq=user_login)
 
         if not user:
@@ -92,7 +96,7 @@ class UserRepository:
                                           "type": "value_invalid", "msg": E.value_invalid})
 
     async def token_select(self, user_login: str, user_totp: str, exp: int = None) -> str:
-        """Login, second step."""
+        """Get user token."""
         user = await self.entity_manager.select_by(User, user_login__eq=user_login)
 
         if not user:
@@ -110,7 +114,7 @@ class UserRepository:
             user.pass_accepted = False
             await self.entity_manager.update(user, commit=True)
             await self.cache_manager.delete(user)
-            
+
             jti = await user.decrypt_attr("jti")
             user_token = await jwt_helper.encode_token(user.id, user.user_role.name, user.user_login, jti, exp)
             return user_token
@@ -128,6 +132,7 @@ class UserRepository:
                                           "type": "value_invalid", "msg": E.value_invalid})
 
     async def token_delete(self, user: User):
+        """Delete user token."""
         jti = await jwt_helper.generate_jti()
         await user.encrypt_attr("jti", jti)
         await self.entity_manager.update(user, commit=True)
@@ -145,7 +150,8 @@ class UserRepository:
         await self.cache_manager.set(user)
         return user
 
-    async def update(self, user: User, first_name: str, last_name: str, user_summary: str = None, user_contacts: str = None):
+    async def update(self, user: User, first_name: str, last_name: str, user_summary: str = None,
+                     user_contacts: str = None):
         """Update user."""
         user.first_name = first_name
         user.last_name = last_name
@@ -175,7 +181,8 @@ class UserRepository:
         await self.cache_manager.delete(user)
 
     async def select_all(self, **kwargs):
-        # subquery
+        """Select some users."""
+        # TODO: subquery
         # if "user_contacts__ilike" in kwargs:
         #     kwargs["id__in"] = await self.entity_manager.subquery(UserMeta, "user_id", meta_key__eq="user_contacts",
         #                                                           meta_value__ilike=kwargs["user_contacts__ilike"])
@@ -186,6 +193,7 @@ class UserRepository:
         return users
 
     async def count_all(self, **kwargs):
+        """Count users."""
         users_count = await self.entity_manager.count_all(User, **kwargs)
         return users_count
 
@@ -216,6 +224,6 @@ class UserRepository:
         if userpic:
             userpic_dir = FileManager.path_join(config.APPDATA_PATH, config.USERPIC_DIR)
             userpic_path = FileManager.path_join(userpic_dir, userpic)
-            FileManager.file_delete(userpic_path)
+            await FileManager.file_delete(userpic_path)
             await meta_repository.set(UserMeta, user.id, "userpic", None, commit=True)
             await self.cache_manager.delete(user)

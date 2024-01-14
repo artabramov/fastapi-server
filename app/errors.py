@@ -1,6 +1,9 @@
-# from fastapi.exceptions import RequestValidationError
+"""Errors."""
+
 
 class E:
+    """Errors dataclass."""
+
     # login errors
     login_denied = "Login denied due to user role permissions"
     login_suspended = "Login attempts are temporarily suspended"
@@ -20,13 +23,3 @@ class E:
 
     # file errors
     file_mime = 'Invalid file mimetype.'
-
-#     @staticmethod
-#     def get_error_dict(error_loc: tuple, error_type: str, value: str) -> None:
-#         # super().__init__({"loc": loc, "type": type,  "msg": getattr(self, type)})
-#         return {"loc": error_loc, "type": error_type, "msg": getattr(E, error_type), "input": value}
-
-
-# class CustomValidationError(RequestValidationError):
-#     def __init__(self, error_loc: tuple, error_type: str, value: str) -> None:
-#         super().__init__({"loc": error_loc, "type": error_type, "msg": getattr(E, error_type), "input": value})

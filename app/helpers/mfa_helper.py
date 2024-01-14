@@ -40,5 +40,5 @@ class MFAHelper:
     async def delete_mfa_image(mfa_key: str) -> None:
         """Delete MFA image."""
         path = FileManager.path_join(config.APPDATA_PATH, config.MFA_DIR, mfa_key + '.' + config.MFA_EXTENSION)
-        FileManager.file_delete(path)
+        await FileManager.file_delete(path)
         log.debug("Delete MFA image, path=%s." % path)

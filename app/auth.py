@@ -1,3 +1,5 @@
+"""Authentication."""
+
 from typing import Annotated
 from fastapi import Depends
 from fastapi.security import HTTPBearer
@@ -22,7 +24,7 @@ jwt_schema = HTTPBearer()
 async def _auth_user(user_token):
     if not user_token.credentials:
         raise HTTPException(status_code=403, detail=E.jwt_empty)
-    
+
     try:
         jwt_payload = await jwt_helper.decode_token(user_token.credentials)
 
@@ -54,6 +56,7 @@ async def _auth_user(user_token):
 
 
 async def auth_admin(user_token: Annotated[str, Depends(jwt_schema)]):
+    """Authenticate admin user."""
     user = await _auth_user(user_token)
     if not user.can_admin:
         raise HTTPException(status_code=403, detail=E.jwt_denied)
@@ -62,6 +65,7 @@ async def auth_admin(user_token: Annotated[str, Depends(jwt_schema)]):
 
 
 async def auth_editor(user_token: Annotated[str, Depends(jwt_schema)]):
+    """Authenticate editor user."""
     user = await _auth_user(user_token)
     if not user.can_edit:
         raise HTTPException(status_code=403, detail=E.jwt_denied)
@@ -70,6 +74,7 @@ async def auth_editor(user_token: Annotated[str, Depends(jwt_schema)]):
 
 
 async def auth_writer(user_token: Annotated[str, Depends(jwt_schema)]):
+    """Authenticate writer user."""
     user = await _auth_user(user_token)
     if not user.can_write:
         raise HTTPException(status_code=403, detail=E.jwt_denied)
@@ -78,6 +83,7 @@ async def auth_writer(user_token: Annotated[str, Depends(jwt_schema)]):
 
 
 async def auth_reader(user_token: Annotated[str, Depends(jwt_schema)]):
+    """Authenticate reader user."""
     user = await _auth_user(user_token)
     if not user.can_read:
         raise HTTPException(status_code=403, detail=E.jwt_denied)

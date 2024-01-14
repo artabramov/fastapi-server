@@ -1,14 +1,8 @@
 """Provides Postgres database session object."""
-# from sqlalchemy import create_engine
-# from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-# from sqlalchemy.ext.asyncio import AsyncSession
-# from contextlib import asynccontextmanager
-from sqlalchemy.orm import sessionmaker
 from app.dotenv import get_config
-
 
 
 config = get_config()
@@ -28,13 +22,3 @@ def get_session():
         yield session
     finally:
         session.close()
-
-    # session = Session()
-    # try:
-    #     yield session
-    #     session.commit()
-    # except:
-    #     session.rollback()
-    #     raise
-    # finally:
-    #     session.close()

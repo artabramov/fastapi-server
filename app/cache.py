@@ -5,5 +5,6 @@ import redis
 
 
 def get_cache():
+    """Get cache object."""
     config = get_config()
     yield redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=config.REDIS_DECODE)

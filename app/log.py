@@ -28,4 +28,5 @@ log.setLevel(logging.getLevelName(config.LOGGING_LEVEL))
 
 
 def get_log():
+    """Get logger object."""
     return log

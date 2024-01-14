@@ -51,8 +51,9 @@ class EntityManager:
             str(cls.__name__), obj_id, str(obj.__dict__) if obj else None))
 
         return obj
-    
+
     async def select_by(self, cls: object, **kwargs) -> object:
+        """Select SQLAlchemy object from Postgres database."""
         objs = await self.select_all(cls, **kwargs)
         return objs[0] if objs else None
 

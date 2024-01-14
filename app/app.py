@@ -1,3 +1,5 @@
+"""Main module."""
+
 from time import time
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
@@ -36,6 +38,7 @@ app.mount("/userpics", StaticFiles(directory=userpic_path, html=False), name=use
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
+    """Log request and response."""
     set_context_var("uuid", str(uuid4()))
     start_time = time()
 
@@ -55,12 +58,8 @@ async def add_process_time_header(request: Request, call_next):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, e: RequestValidationError):
+    """Process validation error."""
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder({"detail": e.errors()}),
     )
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
