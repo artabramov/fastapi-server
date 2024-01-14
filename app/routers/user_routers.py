@@ -1,14 +1,14 @@
 """User routes."""
 
 from fastapi import APIRouter, Depends
-from app.schemas.user_schemas import UserRegisterRequest, UserRegisterResponse, UserLoginRequest, UserLoginResponse, TokenSelectRequest, TokenSelectResponse, UserUpdateRequest, UserUpdateResponse, UserDeleteRequest, UserDeleteResponse, RoleUpdateRequest, RoleUpdateResponse, UserSelectRequest, UserSelectResponse, UsersListRequest, UsersListResponse
+from app.schemas.user_schemas import UserRegisterRequest, UserRegisterResponse, UserLoginRequest, UserLoginResponse, TokenSelectRequest, TokenSelectResponse, TokenDeleteResponse, UserUpdateRequest, UserUpdateResponse, UserDeleteRequest, UserDeleteResponse, RoleUpdateRequest, RoleUpdateResponse, UserSelectRequest, UserSelectResponse, UsersListRequest, UsersListResponse
 from sqlalchemy.orm import Session
 from app.session import get_session
 from app.cache import get_cache
 from app.helpers.repository_helper import RepositoryHelper
 from redis import Redis
 from app.dotenv import get_config
-from app.helpers.mfa_helper import MFA_IMAGE_RELATIVE_URL, MFA_IMAGE_EXTENSION
+from app.helpers.mfa_helper import MFA_IMAGE_URL, MFA_IMAGE_EXTENSION
 from app.auth import auth_admin, auth_editor, auth_writer, auth_reader
 from app.models.user_models import User
 from fastapi.exceptions import RequestValidationError
@@ -24,8 +24,10 @@ async def user_login(session: Session = Depends(get_session), cache: Redis = Dep
     """User login."""
     repository_helper = RepositoryHelper(session, cache)
     user_repository = await repository_helper.get_repository(User.__tablename__)
-    await user_repository.login(schema.user_login, schema.user_pass)
-    return {}
+    await user_repository.login(schema.user_login, schema.user_pass.get_secret_value())
+    return {
+        "pass_accepted": True,
+    }
 
 
 @router.get('/auth/token', tags=['auth'], response_model=TokenSelectResponse)
@@ -40,7 +42,7 @@ async def token_select(session: Session = Depends(get_session), cache: Redis = D
     }
 
 
-@router.delete('/auth/token', tags=['auth'])
+@router.delete('/auth/token', tags=['auth'], response_model=TokenDeleteResponse)
 async def token_delete(session: Session = Depends(get_session), cache: Redis = Depends(get_cache),
                        current_user=Depends(auth_reader)):
     """Delete JWT token."""
@@ -56,11 +58,12 @@ async def user_register(session: Session = Depends(get_session), cache: Redis = 
     """Register a new user."""
     repository_helper = RepositoryHelper(session, cache)
     user_repository = await repository_helper.get_repository(User.__tablename__)
-    user = await user_repository.register(schema.user_login, schema.user_pass, schema.first_name, schema.last_name)
+    user = await user_repository.register(schema.user_login, schema.user_pass.get_secret_value(), schema.first_name,
+                                          schema.last_name)
     return {
         "user_id": user.id,
         "mfa_key": await user.decrypt_attr("mfa_key"),
-        'mfa_image': config.BASE_URL + MFA_IMAGE_RELATIVE_URL + await user.decrypt_attr("mfa_key") + "." + MFA_IMAGE_EXTENSION,
+        'mfa_image': config.BASE_URL + MFA_IMAGE_URL + await user.decrypt_attr("mfa_key") + "." + MFA_IMAGE_EXTENSION,
     }
 
 

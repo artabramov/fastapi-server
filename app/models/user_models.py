@@ -1,4 +1,4 @@
-"""User SQLAlchemy model."""
+"""User and related SQLAlchemy models."""
 
 import enum
 from time import time
@@ -10,7 +10,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from app.helpers.fernet_helper import FernetHelper
 from app.helpers.hash_helper import HashHelper
 from app.dotenv import get_config
-from app.helpers.mfa_helper import MFA_IMAGE_RELATIVE_URL, MFA_IMAGE_EXTENSION
 
 USER_PASS_ATTEMPTS_LIMIT = 10
 USER_PASS_SUSPENDED_TIME = 30
@@ -22,6 +21,8 @@ hash_helper = HashHelper(config.HASH_SALT)
 
 
 class UserMeta(Base):
+    """User meta SQLAlchemy model."""
+
     __tablename__ = "users_meta"
 
     id = Column(BigInteger, primary_key=True, index=True)
@@ -41,6 +42,8 @@ class UserMeta(Base):
 
 
 class UserRole(enum.Enum):
+    """User role SQLAlchemy model."""
+
     none = "none"
     reader = "reader"
     writer = "writer"
@@ -49,6 +52,8 @@ class UserRole(enum.Enum):
 
 
 class User(Base, MetaMixin):
+    """User SQLAlchemy model."""
+
     __tablename__ = "users"
     _encrypted_attrs = ["mfa_key", "jti"]
 
@@ -98,27 +103,29 @@ class User(Base, MetaMixin):
 
     @property
     def can_admin(self) -> bool:
-        """Does the user have admin permissions?"""
+        """Does the user have admin permissions."""
         return self.user_role == UserRole.admin
 
     @property
     def can_edit(self) -> bool:
-        """Does the user have editor permissions?"""
+        """Does the user have editor permissions."""
         return self.user_role in [UserRole.admin, UserRole.editor]
 
     @property
     def can_write(self) -> bool:
-        """Does the user have writer permissions?"""
+        """Does the user have writer permissions."""
         return self.user_role in [UserRole.admin, UserRole.editor, UserRole.writer]
 
     @property
     def can_read(self) -> bool:
-        """Does the user have reader permissions?"""
+        """Does the user have reader permissions."""
         return self.user_role in [UserRole.admin, UserRole.editor, UserRole.writer, UserRole.reader]
 
     @property
     def meta(self) -> dict:
+        """User meta values."""
         return {
             "user_summary": self.getmeta("user_summary"),
             "user_contacts": self.getmeta("user_contacts"),
+            "userpic": self.getmeta("userpic"),
         }

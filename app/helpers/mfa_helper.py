@@ -14,8 +14,8 @@ MFA_IMAGE_FIT = True
 MFA_IMAGE_COLOR = 'black'
 MFA_IMAGE_BACKGROUND = 'white'
 MFA_IMAGE_APP = 'memo'
-MFA_IMAGE_RELATIVE_DIR = 'data/mfa/'
-MFA_IMAGE_RELATIVE_URL = 'mfa/'
+MFA_IMAGE_DIR = 'mfa/'
+MFA_IMAGE_URL = 'mfa/'
 
 config = get_config()
 log = get_log()
@@ -43,13 +43,13 @@ class MFAHelper:
         qr.add_data('otpauth://totp/%s?secret=%s&issuer=%s' % (MFA_IMAGE_APP, mfa_key, user_login))
         qr.make(fit=MFA_IMAGE_FIT)
         img = qr.make_image(fill_color=MFA_IMAGE_COLOR, back_color=MFA_IMAGE_BACKGROUND)
-        path = FileManager.path_join(config.BASE_PATH, MFA_IMAGE_RELATIVE_DIR, mfa_key + '.' + MFA_IMAGE_EXTENSION)
+        path = FileManager.path_join(config.APPDATA_PATH,  MFA_IMAGE_DIR, mfa_key + '.' + MFA_IMAGE_EXTENSION)
         img.save(path)
         log.debug("Create MFA image, path=%s." % path)
 
     @staticmethod
     async def delete_mfa_image(mfa_key: str) -> None:
         """Delete MFA image."""
-        path = FileManager.path_join(config.BASE_PATH, MFA_IMAGE_RELATIVE_DIR, mfa_key + '.' + MFA_IMAGE_EXTENSION)
+        path = FileManager.path_join(config.APPDATA_PATH, MFA_IMAGE_DIR, mfa_key + '.' + MFA_IMAGE_EXTENSION)
         FileManager.file_delete(path)
         log.debug("Delete MFA image, path=%s." % path)

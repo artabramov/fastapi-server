@@ -173,11 +173,10 @@ class UserRepository:
         await self.cache_manager.delete(user)
 
     async def select_all(self, **kwargs):
-        # kwargs = {key[0]: key[1] for key in schema if key[1]}
-
-        if "user_contacts__ilike" in kwargs:
-            kwargs["id__in"] = await self.entity_manager.subquery(UserMeta, "user_id", meta_key__eq="user_contacts",
-                                                                  meta_value__ilike=kwargs["user_contacts__ilike"])
+        # subquery
+        # if "user_contacts__ilike" in kwargs:
+        #     kwargs["id__in"] = await self.entity_manager.subquery(UserMeta, "user_id", meta_key__eq="user_contacts",
+        #                                                           meta_value__ilike=kwargs["user_contacts__ilike"])
 
         users = await self.entity_manager.select_all(User, **kwargs)
         for user in users:
@@ -185,6 +184,5 @@ class UserRepository:
         return users
 
     async def count_all(self, **kwargs):
-        # kwargs = {key[0]: key[1] for key in schema if key[1]}
         users_count = await self.entity_manager.count_all(User, **kwargs)
         return users_count

@@ -42,7 +42,7 @@ class Config:
     BASE_PATH: str
     BASE_URL: str
 
-    DATA_PATH: str
+    APPDATA_PATH: str
 
 
 @lru_cache

@@ -1,16 +1,13 @@
 __pycache__/
 
-.ssh/*
-!.ssh/.gitkeep
+appdata/mediafiles/*
+!appdata/mediafiles/.gitkeep
 
-data/files/*
-!data/files/.gitkeep
+appdata/mfa/*
+!appdata/mfa/.gitkeep
 
-data/mfa/*
-!data/mfa/.gitkeep
+appdata/thumbnails/*
+!appdata/thumbnails/.gitkeep
 
-data/thumbnails/*
-!data/thumbnails/.gitkeep
-
-data/userpics/*
-!data/userpics/.gitkeep
+appdata/userpics/*
+!appdata/userpics/.gitkeep
