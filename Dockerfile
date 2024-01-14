@@ -31,6 +31,7 @@ RUN pip3 install qrcode[pil]
 RUN pip3 install cryptography
 RUN pip3 install PyJWT
 RUN pip3 install filetype
+RUN pip3 install aiofiles
 RUN pip3 install flake8
 RUN pip3 install flake8-docstrings
 RUN pip3 install coverage

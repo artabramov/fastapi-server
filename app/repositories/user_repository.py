@@ -4,10 +4,12 @@ from app.errors import E
 from app.helpers.mfa_helper import MFAHelper
 from app.helpers.jwt_helper import JWTHelper
 from app.dotenv import get_config
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from app.helpers.hash_helper import HashHelper
 from fastapi.exceptions import RequestValidationError
 from app.repositories.meta_repository import MetaRepository
+from app.managers.file_manager import FileManager
+from PIL import Image
 import time
 
 config = get_config()
@@ -186,3 +188,34 @@ class UserRepository:
     async def count_all(self, **kwargs):
         users_count = await self.entity_manager.count_all(User, **kwargs)
         return users_count
+
+    async def userpic_upload(self, user: User, file: UploadFile):
+        """Upload userpic."""
+        if file.content_type not in config.USERPIC_MIMES:
+            raise RequestValidationError({"loc": ["file", "file"], "input": file.content_type,
+                                          "type": "file_mime", "msg": E.file_mime})
+
+        meta_repository = MetaRepository(self.entity_manager)
+        userpic_dir = FileManager.path_join(config.APPDATA_PATH, config.USERPIC_DIR)
+
+        userpic = await FileManager.file_upload(file, userpic_dir)
+        userpic_path = FileManager.path_join(userpic_dir, userpic)
+
+        image = Image.open(userpic_path)
+        image.thumbnail(tuple([config.USERPIC_WIDTH, config.USERPIC_HEIGHT]))
+        image.save(userpic_path, image_quality=config.USERPIC_QUALITY)
+
+        await meta_repository.set(UserMeta, user.id, "userpic", userpic, commit=True)
+        await self.cache_manager.delete(user)
+
+    async def userpic_delete(self, user: User):
+        """Delete userpic."""
+        meta_repository = MetaRepository(self.entity_manager)
+        userpic = user.getmeta("userpic")
+
+        if userpic:
+            userpic_dir = FileManager.path_join(config.APPDATA_PATH, config.USERPIC_DIR)
+            userpic_path = FileManager.path_join(userpic_dir, userpic)
+            FileManager.file_delete(userpic_path)
+            await meta_repository.set(UserMeta, user.id, "userpic", None, commit=True)
+            await self.cache_manager.delete(user)

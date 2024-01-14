@@ -4,9 +4,12 @@ import os
 import uuid
 import shutil
 import filetype
+import aiofiles
 # import io
 # from app.helpers.fernet_helper import FernetHelper
 from app.log import get_log
+
+UPLOAD_CHUNK_SIZE = 1024
 
 log = get_log()
 
@@ -125,14 +128,17 @@ class FileManager:
         """Execute the command."""
         os.system(command)
 
-    # @staticmethod
-    # def file_upload(file: object, path: str) -> str:
-    #     """Upload a file and return filename."""
-    #     filename = self.path_join(self.uuid() + self.file_ext(file.filename))
-    #     path = self.path_join(path, filename)
-    #     file.save(path)
-    #     log.debug('File uploaded. Path=%s.' % path)
-    #     return filename
+    @staticmethod
+    async def file_upload(file: object, dir: str) -> str:
+        """Asynchronously upload a file under a unique filename and return the filename."""
+        filename = FileManager.path_join(FileManager.uuid() + FileManager.file_ext(file.filename))
+        dst_path = FileManager.path_join(dir, filename)
+
+        async with aiofiles.open(dst_path, "wb") as dst_file:
+            while content := await file.read(UPLOAD_CHUNK_SIZE):
+                await dst_file.write(content)
+
+        return filename
 
     # @staticmethod
     # def file_encrypt(base_path: str, filename: str, encryption_key: bytes) -> str:

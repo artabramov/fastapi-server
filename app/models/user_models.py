@@ -21,7 +21,7 @@ hash_helper = HashHelper(config.HASH_SALT)
 
 
 class UserMeta(Base):
-    """User meta SQLAlchemy model."""
+    """SQLAlchemy model for user meta."""
 
     __tablename__ = "users_meta"
 
@@ -42,7 +42,7 @@ class UserMeta(Base):
 
 
 class UserRole(enum.Enum):
-    """User role SQLAlchemy model."""
+    """SQLAlchemy model for user role."""
 
     none = "none"
     reader = "reader"
@@ -52,7 +52,7 @@ class UserRole(enum.Enum):
 
 
 class User(Base, MetaMixin):
-    """User SQLAlchemy model."""
+    """SQLAlchemy model for user."""
 
     __tablename__ = "users"
     _encrypted_attrs = ["mfa_key", "jti"]
@@ -75,7 +75,7 @@ class User(Base, MetaMixin):
     user_meta = relationship("UserMeta", back_populates="user", lazy="joined", cascade="all,delete")
 
     def __init__(self, user_login: str, pass_hash: str, first_name: str, last_name: str):
-        """Init User SQLAlchemy object."""
+        """Init user SQLAlchemy object."""
         self.suspended_date = 0
         self.user_role = UserRole.none
         self.user_login = user_login
@@ -124,8 +124,9 @@ class User(Base, MetaMixin):
     @property
     def meta(self) -> dict:
         """User meta values."""
+        userpic = self.getmeta("userpic")
         return {
             "user_summary": self.getmeta("user_summary"),
             "user_contacts": self.getmeta("user_contacts"),
-            "userpic": self.getmeta("userpic"),
+            "userpic": config.BASE_URL + config.USERPIC_DIR + userpic if userpic else None,
         }

@@ -10,16 +10,17 @@ class MetaRepository:
         """Init User Repository."""
         self.entity_manager = entity_manager
 
-    async def set(self, meta_class: object, parent_id: int, meta_key: str, meta_value: str = None):
+    async def set(self, meta_class: object, parent_id: int, meta_key: str, meta_value: str = None,
+                  commit: bool = False):
         """Insert, update or delete meta value."""
         meta = await self.entity_manager.select_by(meta_class, parent_id__eq=parent_id, meta_key__eq=meta_key)
         if not meta and meta_value:
             meta = meta_class(parent_id, meta_key, meta_value)
-            await self.entity_manager.insert(meta)
+            await self.entity_manager.insert(meta, commit=commit)
 
         elif meta and meta_value:
             meta.meta_value = meta_value
-            await self.entity_manager.update(meta)
+            await self.entity_manager.update(meta, commit=commit)
 
         elif meta and not meta_value:
-            await self.entity_manager.delete(meta)
+            await self.entity_manager.delete(meta, commit=commit)

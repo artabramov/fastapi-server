@@ -44,6 +44,22 @@ class Config:
 
     APPDATA_PATH: str
 
+    MFA_DIR: str
+    MFA_APPNAME: str
+    MFA_EXTENSION: str
+    MFA_VERSION: int
+    MFA_SIZE: int
+    MFA_BORDER: int
+    MFA_FIT: bool
+    MFA_COLOR: str
+    MFA_BACKGROUND: str
+
+    USERPIC_DIR: str
+    USERPIC_MIMES: str
+    USERPIC_WIDTH: int
+    USERPIC_HEIGHT: int
+    USERPIC_QUALITY: int
+
 
 @lru_cache
 def get_config() -> Config:
@@ -65,6 +81,9 @@ def get_config() -> Config:
 
         elif value.isdigit():
             config.__dict__[key] = int(os.environ.get(key))
+
+        # elif ";" in value:
+        #     config.__dict__[key] = os.environ.get(key).split(";")
 
         else:
             config.__dict__[key] = os.environ.get(key)

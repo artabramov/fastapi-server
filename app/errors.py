@@ -18,6 +18,9 @@ class E:
     value_invalid = "The value is invalid"
     value_locked = "The value is locked"
 
+    # file errors
+    file_mime = 'Invalid file mimetype.'
+
 #     @staticmethod
 #     def get_error_dict(error_loc: tuple, error_type: str, value: str) -> None:
 #         # super().__init__({"loc": loc, "type": type,  "msg": getattr(self, type)})

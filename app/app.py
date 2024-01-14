@@ -27,8 +27,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(user_routers.router, prefix=config.API_PREFIX)
 
-mfa_path = FileManager.path_join(config.APPDATA_PATH, "mfa")
+mfa_path = FileManager.path_join(config.APPDATA_PATH, config.MFA_DIR)
 app.mount("/mfa", StaticFiles(directory=mfa_path, html=False), name=mfa_path)
+
+userpic_path = FileManager.path_join(config.APPDATA_PATH, config.USERPIC_DIR)
+app.mount("/userpics", StaticFiles(directory=userpic_path, html=False), name=userpic_path)
 
 
 @app.middleware("http")

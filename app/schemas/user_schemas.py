@@ -1,7 +1,7 @@
 """Pydantic schemas for user model."""
 
 from pydantic import BaseModel, Field, SecretStr
-from fastapi import Query
+from fastapi import Query, File, UploadFile
 from typing import Optional, List, Literal
 from app.models.user_models import UserRole
 
@@ -133,3 +133,27 @@ class UsersListResponse(BaseModel):
 
     users: List[UserSelectResponse]
     users_count: int
+
+
+class UserpicUploadRequest(BaseModel):
+    """Pydantic schema for userpic uploading request."""
+
+    file: UploadFile = File(...)
+
+
+class UserpicUploadResponse(BaseModel):
+    """Pydantic schema for userpic uploading response."""
+
+    pass
+
+
+class UserpicDeleteRequest(BaseModel):
+    """Pydantic schema for userpic deleting request."""
+
+    pass
+
+
+class UserpicDeleteResponse(BaseModel):
+    """Pydantic schema for userpic deleting response."""
+
+    pass
