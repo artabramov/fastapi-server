@@ -35,7 +35,7 @@ class UserMeta(Base):
     user = relationship("User", back_populates="user_meta")
 
     def __init__(self, parent_id: int, meta_key: str, meta_value: str) -> None:
-        """Init user model."""
+        """Init user  meta model."""
         self.parent_id = parent_id
         self.meta_key = meta_key
         self.meta_value = meta_value
