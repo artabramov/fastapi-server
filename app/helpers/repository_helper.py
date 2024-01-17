@@ -5,7 +5,9 @@ from app.managers.cache_manager import CacheManager
 from sqlalchemy.orm import Session
 from redis import Redis
 from app.repositories.user_repository import UserRepository
+from app.repositories.collection_repository import CollectionRepository
 from app.models.user_models import User
+from app.models.collection_models import Collection
 
 
 class RepositoryHelper:
@@ -21,3 +23,6 @@ class RepositoryHelper:
         """Return repository for schema."""
         if tablename == User.__tablename__:
             return UserRepository(self.entity_manager, self.cache_manager)
+
+        elif tablename == Collection.__tablename__:
+            return CollectionRepository(self.entity_manager, self.cache_manager)

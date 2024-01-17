@@ -7,7 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from app.session import Base, engine
-from app.routers import user_routers
+from app.routers import user_routers, collection_routers
 from app.context import set_context_var
 from app.log import get_log
 from uuid import uuid4
@@ -28,6 +28,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(user_routers.router, prefix=config.API_PREFIX)
+app.include_router(collection_routers.router, prefix=config.API_PREFIX)
 
 mfa_path = FileManager.path_join(config.APPDATA_PATH, config.MFA_DIR)
 app.mount("/mfa", StaticFiles(directory=mfa_path, html=False), name=mfa_path)

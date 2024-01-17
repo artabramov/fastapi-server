@@ -36,13 +36,15 @@ class Collection(Base, MetaMixin):
     id = Column(BigInteger, primary_key=True, index=True)
     created_date = Column(Integer, nullable=False, index=True, default=lambda: int(time()))
     updated_date = Column(Integer, nullable=False, index=True, default=0, onupdate=lambda: int(time()))
+    user_id = Column(BigInteger, ForeignKey('users.id'), index=True, nullable=False)
     collection_name = Column(String(128), nullable=False, index=True)
     mediafiles_count = Column(Integer, index=True, nullable=False, default=0)
 
     collection_meta = relationship("CollectionMeta", back_populates="collection", lazy="joined", cascade="all,delete")
 
-    def __init__(self, collection_name: str):
+    def __init__(self, user_id: int, collection_name: str):
         """Init collection SQLAlchemy object."""
+        self.user_id = user_id
         self.collection_name = collection_name
         self.mediafiles_count = 0
 
