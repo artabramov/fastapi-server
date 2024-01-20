@@ -2,8 +2,8 @@ FROM ubuntu:latest
 RUN apt-get update
 ENV DEBIAN_FRONTEND=noninteractive
 
-ADD . /media
-WORKDIR /media
+ADD . /depot
+WORKDIR /depot
 
 RUN apt install software-properties-common -y
 RUN add-apt-repository ppa:deadsnakes/ppa
@@ -36,7 +36,7 @@ RUN pip3 install flake8
 RUN pip3 install flake8-docstrings
 RUN pip3 install coverage
 RUN pip3 install python-crontab
-RUN pip3 freeze > /media/requirements.txt
+RUN pip3 freeze > /depot/requirements.txt
 
 EXPOSE 80
-ENTRYPOINT ["/media/entrypoint.sh"]
+ENTRYPOINT ["/depot/entrypoint.sh"]

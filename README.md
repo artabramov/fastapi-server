@@ -1,11 +1,11 @@
-# media
+# depot
 
-### How to install the app
+### Install the app
 ```
 ./make.sh
 ```
 
-### Where is the app
+### Access to the app
 ```
 http://localhost/docs
 ```
