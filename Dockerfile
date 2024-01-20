@@ -10,22 +10,18 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 
 RUN apt install -y python3.12 python3.12-dev
 RUN apt-get install -y python3-pip
-
-RUN python3.12 -m ensurepip
-RUN python3.12 -m ensurepip --upgrade
-
 RUN unlink /usr/bin/python3
 RUN ln -s /usr/bin/python3.12 /usr/bin/python3
+RUN python3 -m pip install setuptools
+
 # RUN apt-get install python3-setuptools
 # RUN python3 -m pip install setuptools
 
-
-
-RUN pip3 install fastapi[all]
-RUN pip3 install uvicorn[standard]
 RUN pip3 install python-dotenv
 RUN pip3 install SQLAlchemy
 RUN pip3 install psycopg2-binary
+RUN pip3 install fastapi[all]
+RUN pip3 install uvicorn[standard]
 RUN pip3 install redis
 RUN pip3 install pyotp
 RUN pip3 install qrcode[pil]
