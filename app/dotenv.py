@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from functools import lru_cache
 
-DOTENV_FILE = "/depot/.env"
+DOTENV_FILE = "/home/media/.env"
 
 
 class Config:
