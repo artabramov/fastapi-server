@@ -10,19 +10,10 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt install -y python3.12
 RUN apt install -y python3.12-dev
 RUN apt install -y python3.12-distutils
-RUN apt-get install -y python3.12-pip
-# RUN alias python3="/usr/bin/python3.12"
+RUN apt-get install -y python3-pip
 RUN unlink /usr/bin/python3
 RUN ln -s /usr/bin/python3.12 /usr/bin/python3
-
-
-RUN apt install -y postgresql postgresql-contrib
-RUN apt-get install -y redis
-RUN apt-get install -y cron
-RUN apt-get upgrade -y cron
-RUN apt-get install -y ntp
-RUN apt-get install -y sudo
-RUN apt install -y git
+# RUN alias python3="/usr/bin/python3.12"
 
 RUN pip3 install fastapi[all]
 RUN pip3 install uvicorn[standard]
@@ -41,6 +32,14 @@ RUN pip3 install flake8-docstrings
 RUN pip3 install coverage
 RUN pip3 install python-crontab
 RUN pip3 freeze > /mediaserver/requirements.txt
+
+RUN apt install -y postgresql postgresql-contrib
+RUN apt-get install -y redis
+RUN apt-get install -y cron
+RUN apt-get upgrade -y cron
+RUN apt-get install -y ntp
+RUN apt-get install -y sudo
+RUN apt install -y git
 
 EXPOSE 80
 ENTRYPOINT ["/mediaserver/entrypoint.sh"]
