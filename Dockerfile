@@ -14,7 +14,6 @@ RUN unlink /usr/bin/python3
 RUN ln -s /usr/bin/python3.12 /usr/bin/python3
 RUN apt-get install python3-setuptools
 
-# RUN pip3 install setuptools
 RUN pip3 install fastapi[all]
 RUN pip3 install uvicorn[standard]
 RUN pip3 install python-dotenv
