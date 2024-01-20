@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ADD . /mediaserver
 WORKDIR /mediaserver
 
-RUN apt install software-properties-common -y
+RUN apt install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt install -y python3.12
 RUN apt install -y python3.12-dev
