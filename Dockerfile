@@ -5,8 +5,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ADD . /mediaserver
 WORKDIR /mediaserver
 
-RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt install -y software-properties-common
+RUN add-apt-repository ppa:deadsnakes/ppa
+
 RUN apt install -y python3.11 python3.11-dev
 RUN apt-get install -y python3-pip
 RUN unlink /usr/bin/python3
