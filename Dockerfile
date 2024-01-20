@@ -22,7 +22,7 @@ RUN pip3 install redis
 RUN pip3 install pyotp
 RUN pip3 install qrcode[pil]
 RUN pip3 install cryptography
-# RUN pip3 install cffi
+RUN pip3 install cffi
 RUN pip3 install PyJWT
 RUN pip3 install filetype
 RUN pip3 install aiofiles
