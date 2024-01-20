@@ -2,7 +2,7 @@
 
 ### Install the app
 ```
-./make.sh
+./run.sh
 ```
 
 ### Use the app
