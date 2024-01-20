@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from functools import lru_cache
 
-DOTENV_FILE = "/media-server/.env"
+DOTENV_FILE = "/mediaserver/.env"
 
 
 class Config:
