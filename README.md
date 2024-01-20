@@ -1,4 +1,4 @@
-# memo
+# media
 
 ### How to install the app
 ```
