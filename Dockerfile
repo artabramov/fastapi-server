@@ -7,15 +7,15 @@ WORKDIR /mediaserver
 
 RUN apt install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
-RUN apt install -y python3.12
-RUN apt install -y python3.12-dev
+RUN apt install -y python3.11
+RUN apt install -y python3.11-dev
 # RUN apt install -y python3.12-distutils
 RUN apt-get install -y python3-pip
-# RUN alias python3="/usr/bin/python3.12"
+# RUN alias python3="/usr/bin/python3.11"
 RUN unlink /usr/bin/python3
-RUN ln -s /usr/bin/python3.12 /usr/bin/python3
+RUN ln -s /usr/bin/python3.11 /usr/bin/python3
 
-RUN pip3 install setuptools
+# RUN pip3 install setuptools
 RUN pip3 install fastapi[all]
 RUN pip3 install uvicorn[standard]
 RUN pip3 install python-dotenv
