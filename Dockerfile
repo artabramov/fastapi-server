@@ -12,8 +12,8 @@ RUN apt install -y python3.12 python3.12-dev
 RUN apt-get install -y python3-pip
 RUN unlink /usr/bin/python3
 RUN ln -s /usr/bin/python3.12 /usr/bin/python3
-RUN python3 -m pip install setuptools
 
+# RUN python3 -m pip install setuptools
 # RUN apt-get install python3-setuptools
 # RUN python3 -m pip install setuptools
 
