@@ -7,7 +7,9 @@ WORKDIR /mediaserver
 
 RUN apt install software-properties-common -y
 RUN add-apt-repository ppa:deadsnakes/ppa
-RUN apt install -y python3.13 python3.13-dev python3.13-distutils
+RUN apt install -y python3.13
+RUN apt install -y python3.13-dev
+RUN apt install -y python3.13-distutils
 RUN apt-get install -y python3-pip
 # RUN alias python3="/usr/bin/python3.13"
 RUN unlink /usr/bin/python3
