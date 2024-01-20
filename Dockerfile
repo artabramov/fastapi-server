@@ -8,12 +8,12 @@ WORKDIR /mediaserver
 RUN apt install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
 
-RUN apt install -y python3.13 python3.13-dev
+RUN apt install -y python3.12 python3.12-dev
 RUN apt-get install -y python3-pip
 RUN unlink /usr/bin/python3
-RUN ln -s /usr/bin/python3.13 /usr/bin/python3
+RUN ln -s /usr/bin/python3.12 /usr/bin/python3
 
-RUN pip3 install setuptools
+# RUN pip3 install setuptools
 RUN pip3 install fastapi[all]
 RUN pip3 install uvicorn[standard]
 RUN pip3 install python-dotenv
