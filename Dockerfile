@@ -10,7 +10,10 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt install -y python3.13
 RUN apt-get install -y python3-dev
 RUN apt-get install -y python3-pip
-RUN alias python3="/usr/bin/python3.13"
+# RUN alias python3="/usr/bin/python3.13"
+RUN unlink /usr/bin/python3
+RUN ln -s /usr/bin/python3.13 /usr/bin/python3
+
 
 RUN apt install -y postgresql postgresql-contrib
 RUN apt-get install -y redis
