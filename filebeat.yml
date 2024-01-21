@@ -43,7 +43,7 @@ filebeat.modules:
   log:
     enabled: true
     var.paths: ["/var/log/redis/redis-server.log*"]
-  slowlog:
-    enabled: true
-    var.hosts: ["host.docker.internal:6378"]
-    var.password: "admin"
+  # slowlog:
+  #   enabled: true
+  #   var.hosts: ["host.docker.internal:6378"]
+  #   var.password: "admin"
