@@ -23,7 +23,7 @@ output.elasticsearch:
   - index: "redis-%{+yyyy.MM.dd}"
     when.equals:
       event.module: "redis"
-  - index: "media-%{+yyyy.MM.dd}"
+  - index: "app-%{+yyyy.MM.dd}"
     when.contains:
       log.file.path: "/var/log/media-server/"
 
