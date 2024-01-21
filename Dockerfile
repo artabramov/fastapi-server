@@ -7,7 +7,6 @@ WORKDIR /usr/local/media-server
 
 RUN apt install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
-
 RUN apt install -y python3.11 python3.11-dev
 RUN apt-get install -y python3-pip
 RUN unlink /usr/bin/python3
@@ -31,6 +30,10 @@ RUN pip3 install flake8-docstrings
 RUN pip3 install coverage
 RUN pip3 install python-crontab
 RUN pip3 freeze > /usr/local/media-server/requirements.txt
+
+RUN mkdir /var/log/media-server
+# RUN touch /var/log/hide/hide.log
+RUN chown -R www-data:root /var/log/media-server
 
 RUN apt install -y postgresql postgresql-contrib
 RUN apt-get install -y redis

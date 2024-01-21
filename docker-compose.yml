@@ -62,8 +62,9 @@ services:
     - media_log:/var/log/media
     ports:
     - "80:80"
+    - "8081:8081"
     - "5432:5432"
-    - "6379:6379"
+    # - "6379:6379"
 
 volumes:
   elasticsearch_data:
