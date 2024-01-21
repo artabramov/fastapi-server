@@ -1,0 +1,49 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    # - /var/log/apache2/access.log
+    # - /var/log/apache2/error.log
+    - /var/log/media/*.log*
+    - /var/log/postgresql/*.log*
+    - /var/log/redis/redis-server.log*
+
+output.elasticsearch:
+  enabled: true
+  hosts: ["host.docker.internal:9200"]
+  username: "elastic"
+  password: "changeme"
+  indices:
+  # - index: "apache-%{+yyyy.MM.dd}"
+  #   when.equals:
+  #     event.module: "apache"
+  - index: "postgres-%{+yyyy.MM.dd}"
+    when.equals:
+      event.module: "postgresql"
+  - index: "redis-%{+yyyy.MM.dd}"
+    when.equals:
+      event.module: "redis"
+  - index: "media-%{+yyyy.MM.dd}"
+    when.contains:
+      log.file.path: "/var/log/media/"
+
+filebeat.modules:
+# - module: apache
+#   access:
+#     enabled: true
+#     var.paths: ["/var/log/apache2/access.log"]
+#   error:
+#     enabled: true
+#     var.paths: ["/var/log/apache2/error.log"]
+- module: postgresql
+  log:
+    enabled: true
+    var.paths: ["/var/log/postgresql/*.log*"]
+- module: redis
+  log:
+    enabled: true
+    var.paths: ["/var/log/redis/redis-server.log*"]
+  slowlog:
+    enabled: true
+    var.hosts: ["host.docker.internal:6378"]
+    var.password: "admin"
