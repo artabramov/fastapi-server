@@ -4,7 +4,7 @@ filebeat.inputs:
   paths:
     # - /var/log/apache2/access.log
     # - /var/log/apache2/error.log
-    - /var/log/media-server/*.log*
+    # - /var/log/media-server/*.log*
     - /var/log/postgresql/*.log*
     - /var/log/redis/redis-server.log*
 
@@ -23,9 +23,9 @@ output.elasticsearch:
   - index: "redis-%{+yyyy.MM.dd}"
     when.equals:
       event.module: "redis"
-  - index: "app-%{+yyyy.MM.dd}"
-    when.contains:
-      log.file.path: "/var/log/media-server/"
+  # - index: "app-%{+yyyy.MM.dd}"
+  #   when.contains:
+  #     log.file.path: "/var/log/media-server/"
 
 filebeat.modules:
 # - module: apache
