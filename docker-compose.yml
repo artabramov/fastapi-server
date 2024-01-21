@@ -44,7 +44,7 @@ services:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - postgres_log:/var/log/postgresql:ro
       # - apache_log:/var/log/apache2:ro
-      # - app_log:/var/log/media-server:ro
+      - app_log:/var/log/media-server:ro
     command: ["filebeat", "-e", "-strict.perms=false"]
     deploy:
       resources:
@@ -59,7 +59,7 @@ services:
     - postgres_data:/var/lib/postgresql/14/main
     - postgres_log:/var/log/postgresql
     # - apache_log:/var/log/apache2
-    # - app_log:/var/log/media-server
+    - app_log:/var/log/media-server
     ports:
     - "80:80"
     - "8081:8081"
@@ -71,4 +71,4 @@ volumes:
   postgres_data:
   postgres_log:
   # apache_log:
-  # app_log:
+  app_log:
