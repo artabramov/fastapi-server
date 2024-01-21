@@ -31,9 +31,9 @@ RUN pip3 install coverage
 RUN pip3 install python-crontab
 RUN pip3 freeze > /usr/local/media-server/requirements.txt
 
-RUN mkdir /var/log/media-server
+# RUN mkdir /var/log/media-server
 # RUN touch /var/log/hide/hide.log
-RUN chown -R www-data:root /var/log/media-server
+# RUN chown -R www-data:root /var/log/media-server
 
 RUN apt install -y postgresql postgresql-contrib
 RUN apt-get install -y redis
