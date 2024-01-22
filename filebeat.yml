@@ -6,7 +6,7 @@ filebeat.inputs:
     # - /var/log/apache2/error.log
     # - /var/log/media-server/*.log*
     - /var/log/postgresql/*.log*
-    - /var/log/redis/redis-server.log*
+    # - /var/log/redis/redis-server.log*
 
 output.elasticsearch:
   enabled: true
@@ -20,9 +20,9 @@ output.elasticsearch:
   - index: "postgres-%{+yyyy.MM.dd}"
     when.equals:
       event.module: "postgresql"
-  - index: "redis-%{+yyyy.MM.dd}"
-    when.equals:
-      event.module: "redis"
+  # - index: "redis-%{+yyyy.MM.dd}"
+  #   when.equals:
+  #     event.module: "redis"
   # - index: "app-%{+yyyy.MM.dd}"
   #   when.contains:
   #     log.file.path: "/var/log/media-server/"
@@ -39,10 +39,10 @@ filebeat.modules:
   log:
     enabled: true
     var.paths: ["/var/log/postgresql/*.log*"]
-- module: redis
-  log:
-    enabled: true
-    var.paths: ["/var/log/redis/redis-server.log*"]
+# - module: redis
+#   log:
+#     enabled: true
+#     var.paths: ["/var/log/redis/redis-server.log*"]
   # slowlog:
   #   enabled: true
   #   var.hosts: ["host.docker.internal:6378"]
