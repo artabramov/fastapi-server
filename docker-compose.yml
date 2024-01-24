@@ -45,7 +45,7 @@ services:
       - postgres_log:/var/log/postgresql:ro
       # - redis_log:/var/log/redis:ro
       # - apache_log:/var/log/apache2:ro
-      - app_log:/var/log/app:ro
+      # - app_log:/var/log/app:ro
     command: ["filebeat", "-e", "-strict.perms=false"]
     deploy:
       resources:
