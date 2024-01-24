@@ -43,9 +43,9 @@ services:
     volumes:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - postgres_log:/var/log/postgresql:ro
-      - redis_log:/var/log/redis:ro
+      # - redis_log:/var/log/redis:ro
       # - apache_log:/var/log/apache2:ro
-      # - app_log:/var/log/media-server:ro
+      - app_log:/var/log/app:ro
     command: ["filebeat", "-e", "-strict.perms=false"]
     deploy:
       resources:
@@ -61,7 +61,7 @@ services:
     - postgres_log:/var/log/postgresql
     - redis_log:/var/log/redis
     # - apache_log:/var/log/apache2
-    # - app_log:/var/log/media-server
+    - app_log:/var/log/app
     ports:
     - "80:80"
     - "8081:8081"
@@ -72,6 +72,6 @@ volumes:
   elasticsearch_data:
   postgres_data:
   postgres_log:
-  redis_log:
+  # redis_log:
   # apache_log:
-  # app_log:
+  app_log:

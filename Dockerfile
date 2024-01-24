@@ -2,8 +2,8 @@ FROM ubuntu:latest
 RUN apt-get update
 ENV DEBIAN_FRONTEND=noninteractive
 
-ADD . /usr/local/media-server
-WORKDIR /usr/local/media-server
+ADD . /app
+WORKDIR /app
 
 RUN apt install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa
@@ -29,11 +29,11 @@ RUN pip3 install flake8
 RUN pip3 install flake8-docstrings
 RUN pip3 install coverage
 RUN pip3 install python-crontab
-RUN pip3 freeze > /usr/local/media-server/requirements.txt
+RUN pip3 freeze > /app/requirements.txt
 
-RUN mkdir /var/log/media-server
-RUN touch /var/log/media-server/media-server.log
-RUN chown -R www-data:root /var/log/media-server
+RUN mkdir /var/log/app
+RUN touch /var/log/app/app.log
+RUN chown -R www-data:root /var/log/app
 
 RUN apt install -y postgresql postgresql-contrib
 RUN apt-get install -y redis
@@ -44,4 +44,4 @@ RUN apt-get install -y sudo
 RUN apt install -y git
 
 EXPOSE 80
-ENTRYPOINT ["/usr/local/media-server/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
